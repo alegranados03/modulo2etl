@@ -457,7 +457,7 @@ class EtlComplexWorker(EtlWorker):
                     error_literal = 1)
                 break
 
-            correcto = 1 if datos[index_correcto] == "SI" else 2 
+            correcto = 1 if datos[index_correcto] == "SI" else 0 
             literal = LiteralExamenAdmision(
                 list(filter(lambda x: x.id_referencia == int(datos[index_id_pregunta]), examen.preguntas))[0].id,
                 datos[index_id_literal],
