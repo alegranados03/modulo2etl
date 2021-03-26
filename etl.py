@@ -23,6 +23,7 @@ def etl_daemon():
                 rs2 = con.execute("SELECT * FROM proceso_etl_paso_generalidades WHERE id_proceso_etl = " + str(row[0]))
                 for row2 in rs2:
                     print("Iniciando la ejecucion del proceso ETL")
+                    #Para ubuntu si tenes python 3, se pone python3 cuando el subproceso se abre
                     if (row2[5] == "SIMPLE"):
                         p = subprocess.Popen(['python', 'etl_simple_worker.py', str(row[0])])
                     else:
