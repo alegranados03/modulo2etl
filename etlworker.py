@@ -3,8 +3,9 @@ import time
 import logging
 import datetime
 import models.db as db
-
+import sys
 from models import *
+
 
 class EtlWorker(threading.Thread):
     def __init__(self, id_proceso_etl):
@@ -224,6 +225,7 @@ class EtlComplexWorker(EtlWorker):
             # Paso 1: Obtenemos proceso etl y cambiamos su estado
             #         a "Ejecutando"
             proceso = EtlWorker.cambiar_estado_proceso(self, "EJECUTANDO")
+            self.actualizar_progeso_proceso(proceso, 0.0)
             
             
             # Paso 2: Ahora que obtuvimos el proceso ETL, procedemos
@@ -237,6 +239,7 @@ class EtlComplexWorker(EtlWorker):
             # Paso 2.2: Procedemos a chequear si hemos entrado en un estado de error
             #           En caso de ser asi, detenemos el trabajo
             if (self.error_state or examen is None):
+                sys.exit()
                 return
             
             # Paso 3: procedemos a insertar las preguntas del examen
@@ -247,6 +250,7 @@ class EtlComplexWorker(EtlWorker):
             # Paso 3.1: Procedemos a chequear si hemos entrado en un estado de error
             #           En caso de ser asi, detenemos el trabajo
             if (self.error_state or examen is None):
+                sys.exit()
                 return
             
             # Paso 4: procedemos a insertar los literales del examen
@@ -257,6 +261,7 @@ class EtlComplexWorker(EtlWorker):
             # Paso 4.1: Procedemos a chequear si hemos entrado en un estado de error
             #           En caso de ser asi, detenemos el trabajo
             if (self.error_state or examen is None):
+                sys.exit()
                 return
             
             # Paso 5: procedemos a insertar las respuestas del examen
@@ -267,6 +272,7 @@ class EtlComplexWorker(EtlWorker):
             # Paso 5.1: Procedemos a chequear si hemos entrado en un estado de error
             #           En caso de ser asi, detenemos el trabajo
             if (self.error_state or examen is None):
+                sys.exit()
                 return
             
             # Paso 5.2: Procedemos a setear todos los flag de error a 0
@@ -490,7 +496,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV respuestas")
         carga_respuestas = proceso.proceso_etl_carga_respuestas[0]
-        f = None
+        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de respuestas realizado con exito")
@@ -586,6 +592,7 @@ class EtlSimpleWorker(EtlWorker):
             # Paso 1: Obtenemos proceso etl y cambiamos su estado
             #         a "Ejecutando"
             proceso = EtlWorker.cambiar_estado_proceso(self, "EJECUTANDO")
+            self.actualizar_progeso_proceso(proceso, 0.0)
             
             # Paso 2: Ahora que obtuvimos el proceso ETL, procedemos
             #         a crear la fila de examen de admision que representa
@@ -598,6 +605,7 @@ class EtlSimpleWorker(EtlWorker):
             # Paso 2.2: Procedemos a chequear si hemos entrado en un estado de error
             #           En caso de ser asi, detenemos el trabajo
             if (self.error_state or examen is None):
+                sys.exit()
                 return
             
             # Paso 3: Realizamos el llenado del resumen
@@ -607,6 +615,7 @@ class EtlSimpleWorker(EtlWorker):
             # Paso 3.1: Procedemos a chequear si hemos entrado en un estado de error
             #           En caso de ser asi, detenemos el trabajo
             if (self.error_state or examen is None):
+                sys.exit()
                 return
             
             # Paso 3.2: Procedemos a setear todos los flag de error a 0

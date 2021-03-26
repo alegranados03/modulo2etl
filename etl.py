@@ -3,9 +3,9 @@ import time
 import models.db as db
 import subprocess
 
-tracking_list = []
 
 def etl_daemon():
+    tracking_list = []
     while True:
         print("Buscando ETLs a ejecutar")
         print("Consultando a la base de datos")
@@ -25,13 +25,17 @@ def etl_daemon():
                     print("Iniciando la ejecucion del proceso ETL")
                     #Para ubuntu si tenes python 3, se pone python3 cuando el subproceso se abre
                     if (row2[5] == "SIMPLE"):
+                        print("simple")
                         p = subprocess.Popen(['python', 'etl_simple_worker.py', str(row[0])])
+                        print("if fin")
                     else:
+                        print("else")
                         p = subprocess.Popen(['python', 'etl_complex_worker.py', str(row[0])])
+                        print("else fin")
                 
                 tracking_list.append(row[0])
             
             time.sleep(5)
-
+            tracking_list=[]
 
 etl_daemon()
