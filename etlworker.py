@@ -284,10 +284,11 @@ class EtlComplexWorker(EtlWorker):
             EtlWorker.cambiar_estado_proceso(self, "TERMINADO")
             
             self.log("INFO", "proceso ETL ejecutado exitosamente")
-            
+            self.guardar_log()
+
         except Exception as err:
             if (self.id_proceso_etl is not None):
-                EtlWorker.cambiar_estado_proceso(self, "TERMINADO-ERROR")
+                EtlWorker.cambiar_estado_proceso(self, "TERMINADO-ERROR-CODIGO")
             self.log("ERROR", str(err))
             self.log("ERROR", "Error en el proceso etl, abortando la operacion")
             self.guardar_log()
@@ -362,7 +363,7 @@ class EtlComplexWorker(EtlWorker):
                 datos[index_texto_pregunta], None, 
                 datetime.datetime.now(), datetime.datetime.now())
             db.session.add(pregunta)
-            self.log("INFO", "Pregunta agregada con exito")
+            self.log("INFO", "Pregunta con ID=" + str(datos[index_id_pregunta]) + " agregada con exito")
             line = f.readline()
             
             contador = contador + 1
@@ -470,7 +471,7 @@ class EtlComplexWorker(EtlWorker):
                 datos[index_texto_literal], None, correcto,
                 datetime.datetime.now(), datetime.datetime.now())
             db.session.add(literal)
-            self.log("INFO", "Literal agregada con exito")
+            self.log("INFO", "Literal con ID=" + datos[index_id_literal] + " para la pregunta con  ID=" + datos[index_id_pregunta] +  " agregada con exito")
             line = f.readline()
             
             contador = contador + 1
@@ -570,7 +571,7 @@ class EtlComplexWorker(EtlWorker):
                 literal.id,
                 datetime.datetime.now(), datetime.datetime.now())
             db.session.add(respuesta)
-            self.log("INFO", "Respuesta agregada con exito")
+            self.log("INFO", "Respuesta a la pregunta con ID=" + datos[index_id_pregunta] + " del estudiante con ID=" + datos[index_num_aspirante] +  " agregada con exito")
             line = f.readline()
             
             contador = contador + 1
@@ -719,7 +720,7 @@ class EtlSimpleWorker(EtlWorker):
                 examen.id,
                 datetime.datetime.now(), datetime.datetime.now())
             db.session.add(resumen)    
-            self.log("INFO", "Resumen agregado con exito")
+            self.log("INFO", "Resumen para el estudiante con ID=" + datos[index_num_aspirante] + " agregado con exito")
             line = f.readline()
             
             contador = contador + 1
