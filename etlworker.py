@@ -207,6 +207,8 @@ class EtlWorker(threading.Thread):
         print(msg)
     
     def guardar_log(self):
+        db.session.query(ProcesoEtlLog).filter(ProcesoEtlLog.id_proceso_etl == self.id_proceso_etl).delete()
+        db.session.commit()
         log = ProcesoEtlLog(
                 self.id_proceso_etl,
                 self.log_data,
