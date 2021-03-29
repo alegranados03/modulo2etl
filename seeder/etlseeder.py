@@ -1,0 +1,91 @@
+import random
+
+
+# Seeder basico para crear respuesta de examenes
+class Examen:
+    def __init__(self):
+        self.preguntas = []
+
+class Pregunta:
+    def __init__(self):
+        self.id_pregunta = -1
+        self.texto_pregunta = ""
+        self.literales = []
+
+class Literal:
+    def __init__(self):
+        self.id_literal = -1
+        self.texto_literal = ""
+
+# Parametros del seeder
+nombre_archivo_pregunta = "EJEMPLO_PREGUNTAS.csv"
+nombre_archivo_literal = "EJEMPLO_LITERALES.csv"
+numero_estudiantes = 5000
+
+columna_id_pregunta = 0
+columna_texto_pregunta = 3
+
+columna_id_literal = 0
+columna_referencia_pregunta = 1
+columna_texto_literal = 3
+
+
+# --------------- PROCESAMIENTO DE DATOS ---------------------------
+
+# Paso 0: Creando objetos basicos
+examen = Examen()
+
+# Paso 1: Abriendo los archivos
+f_pregunta = open(nombre_archivo_pregunta, encoding="utf-8")
+f_literal = open(nombre_archivo_literal, encoding="utf-8")
+
+# Paso 2: Leyendo y procesando preguntas
+print("Procesando preguntas")
+line = f_pregunta.readline()
+line = f_pregunta.readline()
+while (line):
+    datos = line.strip().split(";")
+    print(datos)
+
+    pregunta = Pregunta()
+    pregunta.id_pregunta = int(datos[columna_id_pregunta])
+    pregunta.texto_pregunta = datos[columna_texto_pregunta]
+    examen.preguntas.append(pregunta)
+
+    line = f_pregunta.readline()
+
+print("")
+print("Procesando respuestas")
+line = f_literal.readline()
+line = f_literal.readline()
+while (line):
+    datos = line.strip().split(";")
+    print(datos)
+
+    literal = Literal()
+    literal.id_literal = datos[columna_id_literal]
+    literal.texto_literal = datos[columna_texto_literal]
+
+    pregunta = list(filter(lambda x: x.id_pregunta == int(datos[columna_referencia_pregunta]), examen.preguntas))[0]
+    pregunta.literales.append(literal)
+
+    line = f_literal.readline()
+
+
+# Paso 3: Imprimiendo prueba de preguntas
+print("")
+print("Iniciando la creacion de respuestas aspirante")
+f = open("EJEMPLO_RESPUESTAS.csv", "w")
+f.write("NUM_ASPIRANTE;ID_PREGUNTA;ID_LITERAL\n")
+
+estudiante = 1
+for i in range(10000, (numero_estudiantes+10000+1)):
+    for pregunta in examen.preguntas:
+        id_pregunta = pregunta.id_pregunta
+        id_literal = pregunta.literales[random.randrange(0, len(pregunta.literales), 1)].id_literal
+
+        fila = "{};{};{}\n".format(i, id_pregunta, id_literal)
+        print(fila)
+        f.write(fila)
+
+f.close()
