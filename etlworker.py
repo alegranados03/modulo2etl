@@ -304,7 +304,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV preguntas")
         carga_preguntas = proceso.proceso_etl_carga_preguntas[0]
-        f = open(db.RUTA_ARCHIVOS + carga_preguntas.nombre_archivo_fisico, "r")
+        f = open(db.RUTA_ARCHIVOS + carga_preguntas.nombre_archivo_fisico, "r", encoding="latin-1")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de preguntas realizado con exito")
@@ -391,7 +391,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV preguntas")
         carga_literales = proceso.proceso_etl_carga_literales[0]
-        f = open(db.RUTA_ARCHIVOS + carga_literales.nombre_archivo_fisico, "r")
+        f = open(db.RUTA_ARCHIVOS + carga_literales.nombre_archivo_fisico, "r", encoding="latin-1")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de preguntas realizado con exito")
@@ -455,6 +455,7 @@ class EtlComplexWorker(EtlWorker):
         linea_archivo = 2
         while (line):
             datos = line.strip().split(";")
+            print(datos)
 
             # Paso 3.1: Comprobamos si el numero de elementos de la fila es el mismo que
             #           el de la cabecera, en caso de no ser asi, lo consideramos como
@@ -499,7 +500,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV respuestas")
         carga_respuestas = proceso.proceso_etl_carga_respuestas[0]
-        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r")
+        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r", encoding="latin-1")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de respuestas realizado con exito")
@@ -550,6 +551,7 @@ class EtlComplexWorker(EtlWorker):
         line = f.readline()
         contador = 0
         linea_archivo = 2
+        id_estudiante_previo = -1
         while (line):
             datos = line.strip().split(";")
 
@@ -573,7 +575,15 @@ class EtlComplexWorker(EtlWorker):
                 literal.id,
                 datetime.datetime.now(), datetime.datetime.now())
             db.session.add(respuesta)
-            self.log("INFO", "Respuesta a la pregunta con ID=" + datos[index_id_pregunta] + " del estudiante con ID=" + datos[index_num_aspirante] +  " agregada con exito")
+
+            if (id_estudiante_previo == -1):
+                id_estudiante_previo = int(datos[index_num_aspirante])
+            else:
+                if (id_estudiante_previo != int(datos[index_num_aspirante])):
+                    #self.log("INFO", "Respuestas para el alumno con ID=" + datos[index_num_aspirante] + " agregadas con exito")
+                    id_estudiante_previo = int(datos[index_num_aspirante])
+
+            #self.log("INFO", "Respuesta a la pregunta con ID=" + datos[index_id_pregunta] + " del estudiante con ID=" + datos[index_num_aspirante] +  " agregada con exito")
             line = f.readline()
             
             contador = contador + 1
@@ -647,7 +657,7 @@ class EtlSimpleWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV resumen area de conocimiento")
         carga_resumen = proceso.proceso_etl_resumen_simple[0]
-        f = open(db.RUTA_ARCHIVOS + carga_resumen.nombre_archivo_fisico, "r")
+        f = open(db.RUTA_ARCHIVOS + carga_resumen.nombre_archivo_fisico, "r", encoding="latin-1")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de resumen realizado con exito")
