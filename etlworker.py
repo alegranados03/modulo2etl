@@ -565,23 +565,39 @@ class EtlComplexWorker(EtlWorker):
                     error_respuesta = 1)
                 break
             
-            pregunta = list(filter(lambda x: x.id_referencia == int(datos[index_id_pregunta]), examen.preguntas))[0]
-            literal = list(filter(lambda x: x.id_referencia == int(datos[index_id_literal]), pregunta.literales))[0]
-            
-            respuesta = RespuestaExamenAdmision(
-                datos[index_num_aspirante],
-                examen.id,
-                pregunta.id,
-                literal.id,
-                datetime.datetime.now(), datetime.datetime.now())
-            db.session.add(respuesta)
+            pregunta = None
+            literal = None
+            saltar_agregado = False
 
-            if (id_estudiante_previo == -1):
-                id_estudiante_previo = int(datos[index_num_aspirante])
-            else:
-                if (id_estudiante_previo != int(datos[index_num_aspirante])):
-                    #self.log("INFO", "Respuestas para el alumno con ID=" + datos[index_num_aspirante] + " agregadas con exito")
+            try:
+                pregunta = list(filter(lambda x: x.id_referencia == int(datos[index_id_pregunta]), examen.preguntas))[0]
+            except:
+                self.log("WARNING", "Linea " + str(linea_archivo) + ": No se ha encontrado la pregunta con ID=" + datos[index_id_pregunta] + ", se ha procedido a saltarse la pregunta")
+                saltar_agregado = True
+            
+            if (saltar_agregado == False):
+                try:
+                    literal = list(filter(lambda x: x.id_referencia == int(datos[index_id_literal]), pregunta.literales))[0]
+                except:
+                    self.log("WARNING", "Linea " + str(linea_archivo) + ": No se ha encontrado el literal con ID=" + datos[index_id_literal] + " para la pregunta con ID=" + str(pregunta.id) + ", se ha procedido a saltarse la pregunta")
+                    saltar_agregado = True
+            
+            if (saltar_agregado == False):
+                respuesta = RespuestaExamenAdmision(
+                    datos[index_num_aspirante],
+                    examen.id,
+                    pregunta.id,
+                    literal.id,
+                    datetime.datetime.now(), datetime.datetime.now())
+                
+                db.session.add(respuesta)
+
+                if (id_estudiante_previo == -1):
                     id_estudiante_previo = int(datos[index_num_aspirante])
+                else:
+                    if (id_estudiante_previo != int(datos[index_num_aspirante])):
+                        #self.log("INFO", "Respuestas para el alumno con ID=" + datos[index_num_aspirante] + " agregadas con exito")
+                        id_estudiante_previo = int(datos[index_num_aspirante])
 
             #self.log("INFO", "Respuesta a la pregunta con ID=" + datos[index_id_pregunta] + " del estudiante con ID=" + datos[index_num_aspirante] +  " agregada con exito")
             line = f.readline()
