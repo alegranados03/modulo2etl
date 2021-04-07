@@ -147,7 +147,7 @@ class EtlWorker(threading.Thread):
         if (contador == self.BULK_SIZE):
                 db.session.commit()
                 self.actualizar_progeso_proceso(proceso)
-                self.log("INFO", "Progeso ETL: " + str(proceso.pcj_etl))
+                self.log("INFO", "Progreso ETL: " + str(proceso.pcj_etl))
                 return 0
         return contador
     
