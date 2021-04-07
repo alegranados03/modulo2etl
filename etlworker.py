@@ -4,6 +4,7 @@ import logging
 import datetime
 import models.db as db
 import sys
+import traceback
 from models import *
 
 
@@ -293,6 +294,7 @@ class EtlComplexWorker(EtlWorker):
             if (self.id_proceso_etl is not None):
                 EtlWorker.cambiar_estado_proceso(self, "TERMINADO-ERROR-CODIGO")
             self.log("ERROR", str(err))
+            self.log("ERROR", traceback.format_exc())
             self.log("ERROR", "Error en el proceso etl, abortando la operacion")
             self.guardar_log()
     
