@@ -198,11 +198,11 @@ class EtlWorker(threading.Thread):
         
     def log(self, msg_type, msg):
         if (msg_type == "INFO"):
-            self.log_data = self.log_data + "\n" + msg_type + " " + msg
+            self.log_data = self.log_data + ";" + msg_type + " " + msg
         elif (msg_type == "WARNING"):
-            self.log_data_warning = self.log_data_warning + "\n" + msg_type + " " + msg
+            self.log_data_warning = self.log_data_warning + ";" + msg_type + " " + msg
         elif (msg_type == "ERROR"):
-            self.log_data_error = self.log_data_error + "\n" + msg_type + " " + msg
+            self.log_data_error = self.log_data_error + ";" + msg_type + " " + msg
         
         print(msg)
     
