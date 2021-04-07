@@ -802,6 +802,36 @@ class EtlSimpleWorker(EtlWorker):
                     " Se esperaban " + str(len(cabecera)) + " columnas, se detectaron: " + str(len(datos)), 
                     error_resumen = 1)
                 break
+            
+            # Paso 3.2: Comprobando si el num de aspirante, es un entero
+            try:
+                prueba_numero = int(datos[index_num_aspirante])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " NUM aspirante/NIE debe ser entero, se encontro: " + datos[index_num_aspirante], 
+                    error_respuesta = 1)
+                break
+            
+            # Paso 3.3: Comprobando si el num de preguntas, es un entero
+            try:
+                prueba_numero = int(datos[index_numero_preguntas])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " Num preguntas debe ser entero, se encontro: " + datos[index_numero_preguntas], 
+                    error_resumen = 1)
+                break
+            
+            # Paso 3.4: Comprobando si el num de preguntas correctas, es un entero
+            try:
+                prueba_numero = int(datos[index_numero_respuestas_correctas])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " Num respuestas correctas debe ser entero, se encontro: " + datos[index_numero_respuestas_correctas], 
+                    error_resumen = 1)
+                break
 
             resumen = ResumenExamenAdmision(
                 datos[index_num_aspirante],
