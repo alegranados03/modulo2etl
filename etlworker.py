@@ -810,7 +810,7 @@ class EtlSimpleWorker(EtlWorker):
                 print("Entramos a la rutina de error")
                 self.rutina_corrupcion_datos(proceso, linea_archivo,
                     " NUM aspirante/NIE debe ser entero, se encontro: " + datos[index_num_aspirante], 
-                    error_respuesta = 1)
+                    error_resumen = 1)
                 break
             
             # Paso 3.3: Comprobando si el num de preguntas, es un entero
