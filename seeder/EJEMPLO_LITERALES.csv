@@ -1,9 +1,0 @@
-ID_LITERAL;ID_PREGUNTA;CORRECTO;TEXTO
-1;1;SI;x^5 = 2
-2;1;NO;x=0
-3;1;NO;Ninguna de las anteriores
-4;1;NO;medicación por medio de {x+8}
-5;2;SI;x^5*2 = 10
-6;2;NO;x^5*4 = 10'
-7;2;NO;Ocupando la letra eñe
-8;2;NO;Ocupando algunos caracteres especiales eñe b-`´

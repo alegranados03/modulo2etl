@@ -16,17 +16,19 @@ class Literal:
     def __init__(self):
         self.id_literal = -1
         self.texto_literal = ""
+        self.correcto = ""
 
 # Parametros del seeder
-nombre_archivo_pregunta = "EJEMPLO_PREGUNTAS.csv"
-nombre_archivo_literal = "EJEMPLO_LITERALES.csv"
+nombre_archivo_pregunta = "DataSetPreguntas.csv"
+nombre_archivo_literal = "DataSetLiterales.csv"
 numero_estudiantes = 5000
 
 columna_id_pregunta = 0
-columna_texto_pregunta = 3
+columna_texto_pregunta = 1
 
 columna_id_literal = 0
 columna_referencia_pregunta = 1
+columna_literal_correcto = 2
 columna_texto_literal = 3
 
 
@@ -65,6 +67,7 @@ while (line):
     literal = Literal()
     literal.id_literal = datos[columna_id_literal]
     literal.texto_literal = datos[columna_texto_literal]
+    literal.correcto = datos[columna_literal_correcto]
 
     pregunta = list(filter(lambda x: x.id_pregunta == int(datos[columna_referencia_pregunta]), examen.preguntas))[0]
     pregunta.literales.append(literal)
@@ -75,17 +78,33 @@ while (line):
 # Paso 3: Imprimiendo prueba de preguntas
 print("")
 print("Iniciando la creacion de respuestas aspirante")
-f = open("EJEMPLO_RESPUESTAS.csv", "w")
+f = open("DataSetRespuestas.csv", "w")
+f2 = open("DataSetGlobalSimple.csv", "w")
+
 f.write("NUM_ASPIRANTE;ID_PREGUNTA;ID_LITERAL\n")
+f2.write("NUM_ASPIRANTE;PREG_MATEMATICAS;RESP_MATEMATICAS\n")
 
 estudiante = 1
 for i in range(10000, (numero_estudiantes+10000+1)):
+    contador_preguntas = 0
+    contador_correctas = 0
+
     for pregunta in examen.preguntas:
+        contador_preguntas = contador_preguntas + 1
+
         id_pregunta = pregunta.id_pregunta
-        id_literal = pregunta.literales[random.randrange(0, len(pregunta.literales), 1)].id_literal
+        literal = pregunta.literales[random.randrange(0, len(pregunta.literales), 1)]
+        id_literal = literal.id_literal
+
+        if (literal.correcto == "SI"):
+            contador_correctas = contador_correctas + 1
 
         fila = "{};{};{}\n".format(i, id_pregunta, id_literal)
         print(fila)
         f.write(fila)
+    
+    fila2 = "{};{};{}\n".format(i, contador_preguntas, contador_correctas)
+    f2.write(fila2)
 
 f.close()
+f2.close()
