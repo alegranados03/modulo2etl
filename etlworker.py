@@ -289,6 +289,7 @@ class EtlComplexWorker(EtlWorker):
             self.guardar_log()
 
         except Exception as err:
+            db.session.rollback()
             if (self.id_proceso_etl is not None):
                 EtlWorker.cambiar_estado_proceso(self, "TERMINADO-ERROR-CODIGO")
             self.log("ERROR", str(err))
@@ -304,7 +305,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV preguntas")
         carga_preguntas = proceso.proceso_etl_carga_preguntas[0]
-        f = open(db.RUTA_ARCHIVOS + carga_preguntas.nombre_archivo_fisico, "r", encoding="latin-1")
+        f = open(db.RUTA_ARCHIVOS + carga_preguntas.nombre_archivo_fisico, "r", encoding="utf-8")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de preguntas realizado con exito")
@@ -391,7 +392,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV preguntas")
         carga_literales = proceso.proceso_etl_carga_literales[0]
-        f = open(db.RUTA_ARCHIVOS + carga_literales.nombre_archivo_fisico, "r", encoding="latin-1")
+        f = open(db.RUTA_ARCHIVOS + carga_literales.nombre_archivo_fisico, "r", encoding="utf-8")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de preguntas realizado con exito")
@@ -500,7 +501,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV respuestas")
         carga_respuestas = proceso.proceso_etl_carga_respuestas[0]
-        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r", encoding="latin-1")
+        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r", encoding="utf-8")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de respuestas realizado con exito")
@@ -673,7 +674,7 @@ class EtlSimpleWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV resumen area de conocimiento")
         carga_resumen = proceso.proceso_etl_resumen_simple[0]
-        f = open(db.RUTA_ARCHIVOS + carga_resumen.nombre_archivo_fisico, "r", encoding="latin-1")
+        f = open(db.RUTA_ARCHIVOS + carga_resumen.nombre_archivo_fisico, "r", encoding="utf-8")
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de resumen realizado con exito")
