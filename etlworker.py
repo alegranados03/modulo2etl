@@ -361,6 +361,16 @@ class EtlComplexWorker(EtlWorker):
                     " Se esperaban " + str(len(cabecera)) + " columnas, se detectaron: " + str(len(datos)), 
                     error_pregunta = 1)
                 break
+            
+            # Paso 3.2: Comprobando si el ID de referencia de pregunta, es un entero
+            try:
+                prueba_numero = int(datos[index_id_pregunta])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " ID de pregunta debe ser entero, se encontro: " + datos[index_id_pregunta], 
+                    error_pregunta = 1)
+                break
 
             pregunta = PreguntaExamenAdmision(
                 examen.id,
@@ -469,6 +479,26 @@ class EtlComplexWorker(EtlWorker):
                     " Se esperaban " + str(len(cabecera)) + " columnas, se detectaron: " + str(len(datos)), 
                     error_literal = 1)
                 break
+            
+            # Paso 3.2: Comprobando si el ID de referencia de literal, es un entero
+            try:
+                prueba_numero = int(datos[index_id_literal])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " ID de literal debe ser entero, se encontro: " + datos[index_id_literal], 
+                    error_literal = 1)
+                break
+            
+            # Paso 3.3: Comprobando si el ID de referencia de pregunta, es un entero
+            try:
+                prueba_numero = int(datos[index_id_pregunta])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " ID de pregunta debe ser entero, se encontro: " + datos[index_id_pregunta], 
+                    error_literal = 1)
+                break
 
             correcto = 1 if datos[index_correcto] == "SI" else 0 
             literal = LiteralExamenAdmision(
@@ -565,6 +595,36 @@ class EtlComplexWorker(EtlWorker):
                 print("Entramos a la rutina de error")
                 self.rutina_corrupcion_datos(proceso, linea_archivo,
                     " Se esperaban " + str(len(cabecera)) + " columnas, se detectaron: " + str(len(datos)), 
+                    error_respuesta = 1)
+                break
+            
+            # Paso 3.2: Comprobando si el ID de referencia de literal, es un entero
+            try:
+                prueba_numero = int(datos[index_id_literal])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " ID de literal debe ser entero, se encontro: " + datos[index_id_literal], 
+                    error_respuesta = 1)
+                break
+            
+            # Paso 3.3: Comprobando si el ID de referencia de pregunta, es un entero
+            try:
+                prueba_numero = int(datos[index_id_pregunta])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " ID de pregunta debe ser entero, se encontro: " + datos[index_id_pregunta], 
+                    error_respuesta = 1)
+                break
+            
+            # Paso 3.4: Comprobando si el ID de referencia de pregunta, es un entero
+            try:
+                prueba_numero = int(datos[index_num_aspirante])
+            except:
+                print("Entramos a la rutina de error")
+                self.rutina_corrupcion_datos(proceso, linea_archivo,
+                    " Num aspirante/ NIE debe ser entero, se encontro: " + datos[index_num_aspirante], 
                     error_respuesta = 1)
                 break
             
