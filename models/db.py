@@ -6,11 +6,12 @@ from sqlalchemy.orm import scoped_session
 #Para Ubuntu(Testeado en la version 20.04)
 #engine = create_engine("mysql+mysqldb://root@localhost:81/tesis?unix_socket=/opt/lampp/var/mysql/mysql.sock")
 
-engine = create_engine("mysql+mysqldb://root@localhost/modulo1")
-session_factory = sessionmaker(bind=engine)
-Session = scoped_session(session_factory)
+#engine = create_engine("mysql+mysqldb://root@localhost/prueba1")
+#session_factory = sessionmaker(bind=engine)
+#Session = scoped_session(session_factory)
 #Session = sessionmaker(bind = engine)
-session = Session()
+#session = Session()
+connection_string = "mysql+mysqldb://root@localhost/prueba1"
 Database = declarative_base()
 
 TBL_PROCESO_ETL_FK = "proceso_etls.id_proceso_etl"
@@ -23,4 +24,4 @@ TBL_EXAMEN_ADMISION_FK = "examen_admision.id"
 TBL_PREGUNTA_EXAMEN_ADMISION_FK = "pregunta_examen_admision.id"
 TBL_LITERAL_EXAMEN_ADMISION_FK = "literal_examen_admision.id"
 
-RUTA_ARCHIVOS = "C:\\xampp\\htdocs\\Tesis-2020\\public\\csv\\"
+RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"

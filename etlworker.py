@@ -5,12 +5,21 @@ import datetime
 import models.db as db
 import sys
 import traceback
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
+
 from models import *
 
 
 class EtlWorker(threading.Thread):
     def __init__(self, id_proceso_etl):
         threading.Thread.__init__(self)
+        self.engine = create_engine(db.connection_string)
+        self.session_factory = sessionmaker(bind=self.engine)
+        self.Session = scoped_session(self.session_factory)
+        self.session = self.Session()
         self.id_proceso_etl = id_proceso_etl
         self.log_data = ""
         self.log_data_warning = ""
@@ -31,7 +40,7 @@ class EtlWorker(threading.Thread):
 
         # Paso 1: Obtener si existe otro examen de admision con las caracteristicas
         #         Dadas
-        examen_existente = db.session.query(ExamenAdmision).filter(ExamenAdmision.anio == generalidades.anio,
+        examen_existente = self.session.query(ExamenAdmision).filter(ExamenAdmision.anio == generalidades.anio,
             ExamenAdmision.fase == generalidades.fase, 
             ExamenAdmision.id_area_conocimiento == generalidades.id_area_conocimiento)
         
@@ -43,17 +52,17 @@ class EtlWorker(threading.Thread):
 
             # Paso 1.1: En base al tipo, decidir si eliminar datos de simple o complejo
             if (tipo == "COMPLEX"):
-                db.session.query(PreguntaExamenAdmision).filter(PreguntaExamenAdmision.id_examen_admision == examen.id).delete()
+                self.session.query(PreguntaExamenAdmision).filter(PreguntaExamenAdmision.id_examen_admision == examen.id).delete()
             else:
-                db.session.query(ResumenExamenAdmision).filter(ResumenExamenAdmision.id_examen_admision == examen.id).delete()
+                self.session.query(ResumenExamenAdmision).filter(ResumenExamenAdmision.id_examen_admision == examen.id).delete()
             
-            db.session.commit()
+            self.session.commit()
         else:
             self.log("INFO", "Creando examen de admision")
             examen = ExamenAdmision(generalidades.anio, generalidades.fase, generalidades.id_area_conocimiento,
                 datetime.datetime.now(), datetime.datetime.now())
-            db.session.add(examen)
-            db.session.commit()
+            self.session.add(examen)
+            self.session.commit()
             self.log("INFO", "Examen de admision con ID = " + str(examen.id) +  " creado con exito")
         
         return examen
@@ -63,7 +72,7 @@ class EtlWorker(threading.Thread):
         self.log("INFO", "Seteando estado = " + estado)
         proceso.estado = estado
         proceso.ejecutar_ahora = 1
-        db.session.commit()
+        self.session.commit()
         self.log("INFO", "Estado del proceso ETL cambiado con exito")
         
         return proceso
@@ -76,22 +85,22 @@ class EtlWorker(threading.Thread):
         proceso.error_resp = error_respuesta
         proceso.error_resu = error_resumen
 
-        db.session.commit()
+        self.session.commit()
     
     def revertir_cambios_etl(self, proceso):
         generalidades = proceso.proceso_etl_generalidades[0]
-        examen_existente = db.session.query(ExamenAdmision).filter(ExamenAdmision.anio == generalidades.anio,
+        examen_existente = self.session.query(ExamenAdmision).filter(ExamenAdmision.anio == generalidades.anio,
             ExamenAdmision.fase == generalidades.fase, 
             ExamenAdmision.id_area_conocimiento == generalidades.id_area_conocimiento)
 
         try:
-            db.session.commit()
+            self.session.commit()
         except:
             d = None
         
         if (examen_existente):
             examen_existente.delete()
-            db.session.commit()
+            self.session.commit()
 
     
     def actualizar_progeso_proceso(self, proceso, pcj = None):
@@ -100,12 +109,12 @@ class EtlWorker(threading.Thread):
             porcentaje = self.lineas_procesadas / self.lineas
             
         proceso.pcj_etl = int(porcentaje*100)
-        db.session.commit()
+        self.session.commit()
         
     
     def obtener_proceso(self):
         self.log("INFO", "Obteniendo proceso ETL con ID: " + str(self.id_proceso_etl))
-        proceso = db.session.query(ProcesoEtl).get(self.id_proceso_etl)
+        proceso = self.session.query(ProcesoEtl).get(self.id_proceso_etl)
         
         if (proceso is not None):
             self.log("INFO", "Proceso obtenido exitosamente")
@@ -146,7 +155,7 @@ class EtlWorker(threading.Thread):
     def calcular_proceso_batch(self, proceso, contador):
         self.lineas_procesadas = self.lineas_procesadas + 1
         if (contador == self.BULK_SIZE):
-                db.session.commit()
+                self.session.commit()
                 self.actualizar_progeso_proceso(proceso)
                 self.log("INFO", "Progreso ETL: " + str(proceso.pcj_etl))
                 return 0
@@ -208,16 +217,16 @@ class EtlWorker(threading.Thread):
         print(msg)
     
     def guardar_log(self):
-        db.session.query(ProcesoEtlLog).filter(ProcesoEtlLog.id_proceso_etl == self.id_proceso_etl).delete()
-        db.session.commit()
+        self.session.query(ProcesoEtlLog).filter(ProcesoEtlLog.id_proceso_etl == self.id_proceso_etl).delete()
+        self.session.commit()
         log = ProcesoEtlLog(
                 self.id_proceso_etl,
                 self.log_data,
                 self.log_data_warning,
                 self.log_data_error,
                 datetime.datetime.now(), datetime.datetime.now())
-        db.session.add(log)
-        db.session.commit()
+        self.session.add(log)
+        self.session.commit()
 
 class EtlComplexWorker(EtlWorker):
     def __init__(self, id_proceso_etl):
@@ -290,7 +299,7 @@ class EtlComplexWorker(EtlWorker):
             self.guardar_log()
 
         except Exception as err:
-            db.session.rollback()
+            self.session.rollback()
             if (self.id_proceso_etl is not None):
                 EtlWorker.cambiar_estado_proceso(self, "TERMINADO-ERROR-CODIGO")
             self.log("ERROR", str(err))
@@ -377,7 +386,7 @@ class EtlComplexWorker(EtlWorker):
                 datos[index_id_pregunta],
                 datos[index_texto_pregunta], None, 
                 datetime.datetime.now(), datetime.datetime.now())
-            db.session.add(pregunta)
+            self.session.add(pregunta)
             self.log("INFO", "Pregunta con ID=" + str(datos[index_id_pregunta]) + " agregada con exito")
             line = f.readline()
             
@@ -387,12 +396,12 @@ class EtlComplexWorker(EtlWorker):
         
         # Paso 4: Commit changes al final de la extraccion
         #         mas un poco de cleanup
-        db.session.commit()
+        self.session.commit()
         f.close()
         
         # Paso 5: Obtenemos datos de examen solo si no hemos entrado en un estado de error
         if (self.error_state == False):
-            examen = db.session.query(ExamenAdmision).get(examen.id)
+            examen = self.session.query(ExamenAdmision).get(examen.id)
         else:
             examen = None
         
@@ -506,7 +515,7 @@ class EtlComplexWorker(EtlWorker):
                 datos[index_id_literal],
                 datos[index_texto_literal], None, correcto,
                 datetime.datetime.now(), datetime.datetime.now())
-            db.session.add(literal)
+            self.session.add(literal)
             self.log("INFO", "Literal con ID=" + datos[index_id_literal] + " para la pregunta con  ID=" + datos[index_id_pregunta] +  " agregada con exito")
             line = f.readline()
             
@@ -517,12 +526,12 @@ class EtlComplexWorker(EtlWorker):
         
         # Paso 4: Commit changes al final de la extraccion
         #         mas un poco de cleanup
-        db.session.commit()
+        self.session.commit()
         f.close()
 
         # Paso 5: Obtenemos datos de examen solo si no hemos entrado en un estado de error
         if (self.error_state == False):
-            examen = db.session.query(ExamenAdmision).get(examen.id)
+            examen = self.session.query(ExamenAdmision).get(examen.id)
         else:
             examen = None
         
@@ -653,7 +662,7 @@ class EtlComplexWorker(EtlWorker):
                     literal.id,
                     datetime.datetime.now(), datetime.datetime.now())
                 
-                db.session.add(respuesta)
+                self.session.add(respuesta)
 
                 if (id_estudiante_previo == -1):
                     id_estudiante_previo = int(datos[index_num_aspirante])
@@ -671,7 +680,7 @@ class EtlComplexWorker(EtlWorker):
         
         # Paso 4: Commit changes al final de la extraccion
         #         mas un poco de cleanup
-        db.session.commit()
+        self.session.commit()
         f.close()
 
 
@@ -840,7 +849,7 @@ class EtlSimpleWorker(EtlWorker):
                 "",
                 examen.id,
                 datetime.datetime.now(), datetime.datetime.now())
-            db.session.add(resumen)    
+            self.session.add(resumen)    
             self.log("INFO", "Resumen para el estudiante con ID=" + datos[index_num_aspirante] + " agregado con exito")
             line = f.readline()
             
@@ -850,12 +859,12 @@ class EtlSimpleWorker(EtlWorker):
             
         # Paso 4: Commit changes al final de la extraccion
         #         mas un poco de cleanup
-        db.session.commit()
+        self.session.commit()
         f.close()
         
         # Paso 5: Obtenemos datos de examen solo si no hemos entrado en un estado de error
         if (self.error_state == False):
-            examen = db.session.query(ExamenAdmision).get(examen.id)
+            examen = self.session.query(ExamenAdmision).get(examen.id)
         else:
             examen = None
         
