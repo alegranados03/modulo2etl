@@ -11,7 +11,7 @@ def etl_daemon():
         print("Consultando a la base de datos")
     
         with db.engine.connect() as con:
-            rs = con.execute("SELECT * FROM proceso_etls WHERE (tipo_etl = 'PROGRAMADO' AND fecha_hora < NOW() AND estado <> 'EJECUTANDO') OR (tipo_etl = 'INSTANTANEO' AND estado = 'ENPROGRESO')")
+            rs = con.execute("SELECT * FROM proceso_etls WHERE (tipo_etl = 'PROGRAMADO' AND fecha_hora < NOW() AND estado <> 'EJECUTANDO' AND estado <> 'TERMINADO') OR (tipo_etl = 'INSTANTANEO' AND estado = 'ENPROGRESO' AND estado <> 'TERMINADO')")
         
             for row in rs:
                 if (row[0] in tracking_list):
