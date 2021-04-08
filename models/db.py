@@ -5,7 +5,7 @@ from sqlalchemy.orm import scoped_session
 
 #Para Ubuntu(Testeado en la version 20.04)
 #engine = create_engine("mysql+mysqldb://root@localhost:81/tesis?unix_socket=/opt/lampp/var/mysql/mysql.sock")
-connection_string = "mysql+mysqldb://root@localhost/prueba1"
+connection_string = "mysql+mysqldb://root@localhost/laravel"
 Database = declarative_base()
 
 TBL_PROCESO_ETL_FK = "proceso_etls.id_proceso_etl"
@@ -25,6 +25,6 @@ RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"
 
 # Declaracion de tablas intermedias de detalle
 preguntas_examen_admision_temas = Table("preguntas_examen_admision_temas", Database.metadata,
-    Column("id_pregunta_examen_admision", Integer, ForeignKey(TBL_PREGUNTA_EXAMEN_ADMISION_FK)),
+    Column("id_pregunta_ex_adm", Integer, ForeignKey(TBL_PREGUNTA_EXAMEN_ADMISION_FK)),
     Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
 )
