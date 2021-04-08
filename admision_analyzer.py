@@ -50,7 +50,9 @@ class BaseAdmisionAnalyzer(threading.Thread):
             # Paso 3: Si no encontramos un bucket, lo creamos, y anexamos
             #         la info de la pregunta
             if bucket is None:
-                self.buckets_temas.append(self.crear_bucket_tema(pregunta))
+                bucket = self.crear_bucket_tema(pregunta)
+            else:
+                self.anexar_pregunta_bucket(bucket, pregunta)
         
         self.imprimir_buckets_temas()
             
@@ -76,7 +78,13 @@ class BaseAdmisionAnalyzer(threading.Thread):
     def crear_bucket_tema(self, pregunta):
         bucket = BucketTema()
         bucket.temas = [tema.id for tema in pregunta.temas]
+        bucket.preguntas.append(pregunta.id)
+
+        self.buckets_temas.append(bucket)
         return bucket
+    
+    def anexar_pregunta_bucket(self, bucket, pregunta):
+        bucket.preguntas.append(pregunta.id)
     
     '''
         HELPER FUNCTIONS
@@ -112,6 +120,8 @@ class BaseAdmisionAnalyzer(threading.Thread):
         for bucket in self.buckets_temas:
             print("Temas: ")
             print(bucket.temas)
+            print("Preguntas: ")
+            print(bucket.preguntas)
             print("")
 
 
