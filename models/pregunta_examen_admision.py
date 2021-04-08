@@ -17,6 +17,8 @@ class PreguntaExamenAdmision(db.Database):
     # Propiedades relationship
     id_examen_admision = Column(Integer, ForeignKey(db.TBL_EXAMEN_ADMISION_FK))
     literales = relationship("LiteralExamenAdmision")
+
+    temas =  relationship("Tema", secondary=db.preguntas_examen_admision_temas)
     
     def __init__(self, id_examen_admision, id_referencia,
         texto_pregunta, imagen_pregunta, 
