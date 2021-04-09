@@ -16,7 +16,7 @@ class BucketTema():
     def __init__(self):
         self.preguntas = []
         self.temas = []
-        self.bucket_deficiencias = []
+        self.buckets_deficiencias = []
 
 class BucketDeficiencia():
     def __init__(self):
@@ -53,6 +53,16 @@ class BaseAdmisionAnalyzer(threading.Thread):
                 bucket = self.crear_bucket_tema(pregunta)
             else:
                 self.anexar_pregunta_bucket(bucket, pregunta)
+            
+            for literal in list(filter(lambda x: x.etiqueta is not None, pregunta.literales)):
+                # Paso 4: Procedemos a buscar el bucket de deficiencia, si no lo
+                #         encontramos, y anexamos la info del literal
+                bucket_deficiencia = self.obtener_bucket_deficiencia(bucket, literal)
+
+                if bucket_deficiencia is None:
+                    bucket_deficiencia = self.crear_bucket_deficiencia(bucket, literal)
+                else:
+                    self.anexar_literal_bucket(bucket_deficiencia, literal)
         
         self.imprimir_buckets_temas()
             
@@ -86,6 +96,29 @@ class BaseAdmisionAnalyzer(threading.Thread):
     def anexar_pregunta_bucket(self, bucket, pregunta):
         bucket.preguntas.append(pregunta.id)
     
+    def obtener_bucket_deficiencia(self, bucket_tema, literal):
+        # Paso 1: recorremos la lista para determinar si alguno de los bucket
+        #         de deficiencia representa la deficiencia del literal
+        bucket = None
+
+        for bucket_deficiencia in bucket_tema.buckets_deficiencias:
+            if (literal.etiqueta.id != bucket_deficiencia.deficiencia):
+                continue
+            
+            bucket = bucket_deficiencia
+            break
+        
+        return bucket
+
+    def crear_bucket_deficiencia(self, bucket_tema, literal):
+        bucket_deficiencia = BucketDeficiencia()
+        bucket_deficiencia.deficiencia = literal.etiqueta.id
+        bucket_deficiencia.literales.append(literal.id)
+        bucket_tema.buckets_deficiencias.append(bucket_deficiencia)
+    
+    def anexar_literal_bucket(self, bucket_deficiencia, literal):
+        bucket_deficiencia.literales.append(literal.id)
+    
     '''
         HELPER FUNCTIONS
     '''
@@ -103,7 +136,7 @@ class BaseAdmisionAnalyzer(threading.Thread):
     '''
     def imprimir_estado_examen(self):
         for pregunta in self.examen.preguntas:
-            print("ID Referencia: " + str(pregunta.id_referencia))
+            print("ID Referencia: " + str(pregunta.id_referencia) + " ORIGINAL: " + str(pregunta.id))
             print("Temas: " + str(len(pregunta.temas)))
 
             for tema in pregunta.temas:
@@ -112,7 +145,7 @@ class BaseAdmisionAnalyzer(threading.Thread):
             print("Etiquetas involucradas: ")
 
             for literal in list(filter(lambda x: x.etiqueta is not None, pregunta.literales)):
-                print("ID=" + str(literal.etiqueta.id) + " " + literal.etiqueta.enunciado)
+                print("ID=" + str(literal.etiqueta.id) + " " + literal.etiqueta.enunciado + " LITERAL=" + str(literal.id))
             
             print("")
     
@@ -122,7 +155,13 @@ class BaseAdmisionAnalyzer(threading.Thread):
             print(bucket.temas)
             print("Preguntas: ")
             print(bucket.preguntas)
-            print("")
+
+            print("Deficiencias:")
+            for bucket_deficiencia in bucket.buckets_deficiencias:
+                print(bucket_deficiencia.deficiencia)
+                print(bucket_deficiencia.literales)
+            
+            print("###################")
 
 
 
