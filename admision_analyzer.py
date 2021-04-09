@@ -120,6 +120,26 @@ class BaseAdmisionAnalyzer(threading.Thread):
         bucket_deficiencia.literales.append(literal.id)
     
     '''
+        FUNCIONES RELACIONADAS A LA CREACION DE LOS BUCKETS Y PERSISTENCIA
+        EN BASE DE DATOS
+    '''
+    def almacenar_buckets(self):
+        for bucket_tema in self.buckets_temas:
+            # Paso 2: Agregando informacion basica del tema
+            bucket = BucketTemaAdmision(self.examen.id)
+            bucket.temas = self.session.query(Tema).filter(Tema.id.in_(bucket_tema.temas)).all()
+
+            # Paso 3: Agregando buckets de deficiencia
+            bucket.deficiencias = []
+            for bucket_deficiencia in bucket_tema.buckets_deficiencias:
+                bucket2 = BucketDeficienciaAdmision(None, bucket_deficiencia.deficiencia)
+                bucket.deficiencias.append(bucket2)
+                
+            self.session.add(bucket)
+        
+        self.session.commit()
+    
+    '''
         HELPER FUNCTIONS
     '''
     def obtener_examen(self):
@@ -181,3 +201,7 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
 
         # Paso 3: Construir buckets y sus relaciones
         self.construir_buckets()
+
+        # Paso 4: Construir los modelos ORM del calculo de tuplas de temas
+        #         y las etiquetas de deficiencia asociadas a dichas tuplas
+        self.almacenar_buckets()

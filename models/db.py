@@ -20,11 +20,18 @@ TBL_LITERAL_EXAMEN_ADMISION_FK = "literal_examen_admision.id"
 TBL_TEMA_FK = "temas.id"
 TBL_ETIQUETA_FK = 'etiquetas.id'
 
+TBL_BUCKET_TEMA_ADMISION_FK = "bucket_tema_adm.id"
+
 RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"
 
 
 # Declaracion de tablas intermedias de detalle
 preguntas_examen_admision_temas = Table("preguntas_examen_admision_temas", Database.metadata,
     Column("id_pregunta_ex_adm", Integer, ForeignKey(TBL_PREGUNTA_EXAMEN_ADMISION_FK)),
+    Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
+)
+
+bucket_tema_adm_detalle = Table("bucket_tema_adm_detalle", Database.metadata,
+    Column("bucket_tema_adm_id", Integer, ForeignKey(TBL_BUCKET_TEMA_ADMISION_FK)),
     Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
 )

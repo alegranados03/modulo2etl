@@ -17,3 +17,6 @@ from models.proceso_etl_carga_resumen import *
 from models.opciones_etl_carga_resumen import *
 from models.resumen_examen_admision import *
 from models.proceso_etl_log import *
+
+from models.bucket_tema_admision import *
+from models.bucket_deficiencia_admision import *
