@@ -19,8 +19,11 @@ TBL_PREGUNTA_EXAMEN_ADMISION_FK = "pregunta_examen_admision.id"
 TBL_LITERAL_EXAMEN_ADMISION_FK = "literal_examen_admision.id"
 TBL_TEMA_FK = "temas.id"
 TBL_ETIQUETA_FK = 'etiquetas.id'
+TBL_INSTITUCION_FK = 'instituciones.id'
 
 TBL_BUCKET_TEMA_ADMISION_FK = "bucket_tema_adm.id"
+TBL_BUCKET_TEMA_ADMISION_INSTITUTO_FK = "bucket_tema_adm_instituto.id"
+TBL_BUCKET_DEFICIENCIA_ADMISION_FK = "bucket_deficiencia_adm.id"
 
 RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"
 

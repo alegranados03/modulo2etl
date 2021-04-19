@@ -63,6 +63,12 @@ DROP TABLE bucket_deficiencia_adm;
 DROP TABLE bucket_tema_adm_detalle;
 DROP TABLE bucket_tema_adm;
 
+DELETE FROM bucket_deficiencia_adm_instituto;
+DELETE FROM bucket_tema_adm_instituto;
+DELETE FROM bucket_deficiencia_adm;
+DELETE FROM bucket_tema_adm_detalle;
+DELETE FROM bucket_tema_adm;
+
 --CREATE TABLE bucket_tema_pregunta_adm(
 --    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
 --    bucket_tema_adm_id BIGINT(20) UNSIGNED NOT NULL,

@@ -17,6 +17,8 @@ class BucketTema():
         self.preguntas = []
         self.temas = []
         self.buckets_deficiencias = []
+        self.literales_correctos = []
+        self.referencia_bucket_tema = None
 
 class BucketDeficiencia():
     def __init__(self):
@@ -63,6 +65,11 @@ class BaseAdmisionAnalyzer(threading.Thread):
                     bucket_deficiencia = self.crear_bucket_deficiencia(bucket, literal)
                 else:
                     self.anexar_literal_bucket(bucket_deficiencia, literal)
+            
+            for literal in list(filter(lambda x: x.etiqueta is None, pregunta.literales)):
+                # Paso 5: Ya calculamos todos los literales de la pregunta que eran deficiencia
+                #         ahora procedemos a guardar el literal de pregunta que era el correcto
+                bucket.literales_correctos.append(literal.id)
         
         self.imprimir_buckets_temas()
             
@@ -134,7 +141,8 @@ class BaseAdmisionAnalyzer(threading.Thread):
             for bucket_deficiencia in bucket_tema.buckets_deficiencias:
                 bucket2 = BucketDeficienciaAdmision(None, bucket_deficiencia.deficiencia)
                 bucket.deficiencias.append(bucket2)
-                
+            
+            bucket_tema.referencia_bucket_tema = bucket
             self.session.add(bucket)
         
         self.session.commit()
@@ -175,6 +183,8 @@ class BaseAdmisionAnalyzer(threading.Thread):
             print(bucket.temas)
             print("Preguntas: ")
             print(bucket.preguntas)
+            print("Literales correctos: ")
+            print(bucket.literales_correctos)
 
             print("Deficiencias:")
             for bucket_deficiencia in bucket.buckets_deficiencias:
@@ -197,7 +207,7 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
         #         a esta instancia
 
         # Paso 2: Obtener el examen de admision 
-        examen = self.obtener_examen()
+        self.obtener_examen()
 
         # Paso 3: Construir buckets y sus relaciones
         self.construir_buckets()
@@ -205,3 +215,63 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
         # Paso 4: Construir los modelos ORM del calculo de tuplas de temas
         #         y las etiquetas de deficiencia asociadas a dichas tuplas
         self.almacenar_buckets()
+
+        # Paso 5: Procedemos a calcular las frecuencias a nivel de institucion
+        #         en base a genero
+        self.calcular_frecuencias_institucion_genero()
+    
+    def calcular_frecuencias_institucion_genero(self):
+        print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")
+        # Paso 1: Obtenemos todas las instituciones que vamos a ocupar para calcular
+        instituciones = self.session.query(Institucion)
+
+        # Paso 2: Iteramos cada una de las instituciones y empezamos el calculo
+        for institucion in instituciones:
+            print("PROCEDEMOS A CALCULAR EL INSTITUTO CON ID=" + str(institucion.id))
+
+            for bucket_tema in self.buckets_temas:
+                print("CALCULANDO LA FRECUENCIA PARA LOS BUCKETS:")
+                print(bucket_tema.temas)
+                print(bucket_tema.referencia_bucket_tema.id)
+                
+                datos_generales = self.calcular_pregunta_genero(institucion.id, bucket_tema.preguntas)
+                for dato in datos_generales:
+                    print(dato)
+    
+    def calcular_pregunta_genero(self, institucion_id, id_preguntas):
+        sql = """
+        SELECT 
+            e.genero, 
+            COUNT(*) as NUMERO_PREGUNTAS 
+        FROM 
+            respuesta_examen_admision re
+        INNER JOIN 
+            estudiantes e
+            ON e.NIE = re.numero_aspirante
+        WHERE
+            re.numero_aspirante IN(
+                SELECT 
+                    estudiantes.NIE 
+                FROM 
+                    users
+                INNER JOIN 
+                    estudiantes
+                    ON users.id = estudiantes.user_id
+                WHERE 
+                    YEAR(users.created_at) = :ANIO_EXAMEN_ADM AND
+                    estudiantes.institucion_id = :ID_INSTITUCION
+            ) AND
+            re.id_pregunta_examen_admision IN :ID_PREGUNTAS
+        GROUP BY
+            e.genero; 
+        """
+
+        params = {
+            'ANIO_EXAMEN_ADM': self.examen.anio,
+            'ID_INSTITUCION': institucion_id,
+            'ID_PREGUNTAS': id_preguntas
+        }
+
+        print(params)
+
+        return self.session.execute(sql, params)

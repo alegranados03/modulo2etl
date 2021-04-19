@@ -1,0 +1,128 @@
+Sentencias SQL a ocupar
+
+-> Calcular numero de veces que aparece
+   cierto conjunto de preguntas (con esta
+   SQL puedo obtener las veces que aparecieron
+   el conjunto de preguntas para un bucket de
+   tema)
+
+SELECT 
+    COUNT(*) as NUMERO_PREGUNTAS 
+FROM 
+    respuesta_examen_admision re
+WHERE 
+    re.id_pregunta_examen_admision IN(@ID_PREGUNTAS) AND
+    re.numero_aspirante IN(
+        SELECT 
+            estudiantes.NIE 
+        FROM 
+            users
+        INNER JOIN 
+            estudiantes
+            ON users.id = estudiantes.user_id
+        WHERE 
+            YEAR(users.created_at) = @ANIO_EXAMEN_ADM AND
+            estudiantes.institucion_id = @ID_INSTITUTO
+    );
+
+
+-> Calcular el numero de veces que aparece cierto
+   conjunto de preguntas, por genero (con esta SQL
+   puedo obtener el numero de preguntas que aparecieron
+   por genero, para un bucket de temas)
+
+SELECT 
+    e.genero, 
+    COUNT(*) as NUMERO_PREGUNTAS 
+FROM 
+    respuesta_examen_admision re
+INNER JOIN 
+    estudiantes e
+    ON e.NIE = re.numero_aspirante
+WHERE
+    re.numero_aspirante IN(
+        SELECT 
+            estudiantes.NIE 
+        FROM 
+            users
+        INNER JOIN 
+            estudiantes
+            ON users.id = estudiantes.user_id
+        WHERE 
+            YEAR(users.created_at) = @ANIO_EXAMEN_ADM AND
+            estudiantes.institucion_id = @ID_INSTITUTO
+    ) AND
+    re.id_pregunta_examen_admision IN(@ID_PREGUNTAS)
+GROUP BY
+    e.genero;
+
+
+-> Calcular la distribucion de las respuestas,
+   para cierto conjunto de preguntas
+   para un año determinado (con esta SQL obtengo
+   la distribucion, y a nivel de progra, puedo
+   nada mas colocar la respectiva COUNT en los
+   buckets respectivos)
+
+SELECT
+    re.id_pregunta_examen_admision,
+    re.id_literal_pregunta,
+    COUNT(*) FRECUENCIA
+FROM 
+    respuesta_examen_admision re
+WHERE
+    re.numero_aspirante IN(
+        SELECT 
+            estudiantes.NIE 
+        FROM 
+            users
+        INNER JOIN 
+            estudiantes
+            ON users.id = estudiantes.user_id
+        WHERE 
+            YEAR(users.created_at) = @ANIO_EXAMEN_ADM AND
+            estudiantes.institucion_id = @ID_INSTITUCION
+    ) AND
+    re.id_pregunta_examen_admision IN(@ID_PREGUNTA)
+GROUP BY
+    re.id_pregunta_examen_admision,
+    re.id_literal_pregunta
+
+
+
+-> Calcular la distribucion de las respuestas (por genero),
+   para cierto conjunto de preguntas
+   para un año determinado (con esta SQL obtengo
+   la distribucion, y a nivel de progra, puedo
+   nada mas colocar la respectiva COUNT en los
+   buckets respectivos)
+
+SELECT 
+    re.id_pregunta_examen_admision,
+    re.id_literal_pregunta, 
+    e.genero,    
+    COUNT(*) as FRECUENCIA 
+FROM 
+    respuesta_examen_admision re
+INNER JOIN 
+    estudiantes e
+    ON e.NIE = re.numero_aspirante
+WHERE
+    re.numero_aspirante IN(
+        SELECT 
+            estudiantes.NIE 
+        FROM 
+            users
+        INNER JOIN 
+            estudiantes
+            ON users.id = estudiantes.user_id
+        WHERE 
+            YEAR(users.created_at) = @ANIO_EXAMEN_ADM AND
+            estudiantes.institucion_id = @ID_INSTITUTO
+    ) AND
+    re.id_pregunta_examen_admision IN(@ID_PREGUNTAS)
+GROUP BY
+    re.id_pregunta_examen_admision,
+    re.id_literal_pregunta,
+    e.genero;
+

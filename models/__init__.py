@@ -9,6 +9,7 @@ from models.examen_admision import *
 from models.seccion import *
 from models.tema import*
 from models.etiqueta import *
+from models.institucion import *
 from models.pregunta_examen_admision import *
 from models.literal_examen_admision import *
 from models.respuesta_examen_admision import *
@@ -20,3 +21,5 @@ from models.proceso_etl_log import *
 
 from models.bucket_tema_admision import *
 from models.bucket_deficiencia_admision import *
+from models.bucket_tema_admision_instituto import *
+from models.bucket_deficiencia_admision_instituto import *
