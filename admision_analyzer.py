@@ -196,6 +196,11 @@ class BaseAdmisionAnalyzer(threading.Thread):
 
 
 
+
+
+
+
+
 class AdmisionAnalyzer(BaseAdmisionAnalyzer):
     def __init__(self, id_examen_admision):
         BaseAdmisionAnalyzer.__init__(self, id_examen_admision)
@@ -229,15 +234,95 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
         for institucion in instituciones:
             print("PROCEDEMOS A CALCULAR EL INSTITUTO CON ID=" + str(institucion.id))
 
+            # Paso 3: Por cada institucion, tenemos que calcular todos los buckets de temas
+            #         y sus respectivas deficiencias
             for bucket_tema in self.buckets_temas:
+                print("------------------------------------------------")
                 print("CALCULANDO LA FRECUENCIA PARA LOS BUCKETS:")
                 print(bucket_tema.temas)
-                print(bucket_tema.referencia_bucket_tema.id)
+
+                # Paso 4: Creamos el bucket de tema para la institucion, y lo llenamos con la
+                #         data inicial (numero de preguntas por genero)
+                bucket_tema_instituto = self.crear_bucket_tema_instituto(institucion, bucket_tema)
+
+                # Paso 5: Procedemos a calcular las frecuencias (por genero) de cada uno de lo literales
+                #         de las preguntas involugradas en este bucket
+                datos_frecuencia = self.calcular_frecuencia_literales_genero(institucion.id, bucket_tema.preguntas)
+
+                # Paso 6: En base a las frecuencias procedemos a obtener y calcular la frecuencia de aciertos
+                #         respecto a las preguntas que cubre este bucket
+                bucket_tema_instituto.aciertos = 0
+                bucket_tema_instituto.aciertos_masculino = 0
+                bucket_tema_instituto.aciertos_femenino = 0
+
+                frecuencia_aciertos = list(filter(lambda x: x[0] in bucket_tema.preguntas 
+                    and (x[1] in bucket_tema.literales_correctos), datos_frecuencia))
                 
-                datos_generales = self.calcular_pregunta_genero(institucion.id, bucket_tema.preguntas)
-                for dato in datos_generales:
-                    print(dato)
+                for frecuencia_acierto in frecuencia_aciertos:
+                    if frecuencia_acierto[2] == "M":
+                        bucket_tema_instituto.aciertos_masculino = bucket_tema_instituto.aciertos_masculino + frecuencia_acierto[3]
+                    else:
+                        bucket_tema_instituto.aciertos_femenino = bucket_tema_instituto.aciertos_femenino + frecuencia_acierto[3]
+                
+                bucket_tema_instituto.aciertos = bucket_tema_instituto.aciertos_masculino + bucket_tema_instituto.aciertos_femenino
+                
+                print("PARA ESTE BUCKET DE TEMAS, LA FRECUENCIA DE EXITOS ES: ")
+                print("EXITOS TOTALES = " + str(bucket_tema_instituto.aciertos))
+                print("EXITOS M=" + str(bucket_tema_instituto.aciertos_masculino))
+                print("EXITOS F=" + str(bucket_tema_instituto.aciertos_femenino))
+
+                # Paso 7: Iteramos los buckets de deficiencia, y empezamos a realizar el calculo
+                #         de frecuencias
+                for bucket_deficiencia in bucket_tema.buckets_deficiencias:
+                    # Paso 8: Obtenemos la referencia correspondiente en DB
+                    referencia_bucket_deficiencia = list(filter(lambda x: x.etiqueta_id == bucket_deficiencia.deficiencia, 
+                        bucket_tema.referencia_bucket_tema.deficiencias))
+                    
+                    if (len(referencia_bucket_deficiencia) == 0):
+                        raise Exception("No se encontro referencia a bucket de deficiencia")
+                    else:
+                        referencia_bucket_deficiencia = referencia_bucket_deficiencia[0]
+                    
+                    # Paso 9: Nos limitamos a la data involucrada para este bucket de deficiencia
+                    datos_frec_deficiencia = list(filter(lambda x: x[0] in bucket_tema.preguntas 
+                        and (x[1] in bucket_tema.literales_correctos or x[1] in bucket_deficiencia.literales),
+                        datos_frecuencia))
+                    
+                    # Paso 10: Con la data filtrada procedemos a crear buckets de deficiencia
+
     
+    
+    def crear_bucket_tema_instituto(self, institucion, bucket_tema):
+        # Paso 1: Creamos el bucket de instituto, con datos por defecto a 0
+        bucket_tema_instituto = BucketTemaAdmisionInstituto(
+            bucket_tema.referencia_bucket_tema.id,
+            institucion.id,
+            0, 0, 0, 0, 0, 0, 0, 0, 0
+        )
+
+        # Paso 2: Obtenemos los datos generales de numero de preguntas, y lo anexamos al bucket
+        #         de instituto, los fallos y aciertos los iremos calculando mientras vayamos
+        #         iterando las etiquetas de deficiencia
+        datos_generales = self.calcular_pregunta_genero(institucion.id, bucket_tema.preguntas)
+        cuenta_M = list(filter(lambda x: x[0] == "M", datos_generales))
+        cuenta_F = list(filter(lambda x: x[0] == "F", datos_generales))
+
+        bucket_tema_instituto.preguntas_masculino = 0
+        bucket_tema_instituto.preguntas_femenino = 0
+
+        if len(cuenta_M) > 0:
+            bucket_tema_instituto.preguntas_masculino = cuenta_M[0][1]
+        
+        if len(cuenta_F) > 0:
+            bucket_tema_instituto.preguntas_femenino = cuenta_F[0][1]
+        
+        bucket_tema_instituto.preguntas = bucket_tema_instituto.preguntas_masculino + bucket_tema_instituto.preguntas_femenino
+        
+        print("M=" + str(bucket_tema_instituto.preguntas_masculino))
+        print("F=" + str(bucket_tema_instituto.preguntas_femenino))
+
+        return bucket_tema_instituto
+
     def calcular_pregunta_genero(self, institucion_id, id_preguntas):
         sql = """
         SELECT 
@@ -272,6 +357,54 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
             'ID_PREGUNTAS': id_preguntas
         }
 
+        print("PARAMETROS FRECUENCIA PREGUNTAS")
         print(params)
 
-        return self.session.execute(sql, params)
+        return self.session.execute(sql, params).fetchall()
+    
+    def calcular_frecuencia_literales_genero(self, institucion_id, id_preguntas):
+        sql = """
+        SELECT 
+            re.id_pregunta_examen_admision,
+            re.id_literal_pregunta, 
+            e.genero,    
+            COUNT(*) as FRECUENCIA 
+        FROM 
+            respuesta_examen_admision re
+        INNER JOIN 
+            estudiantes e
+            ON e.NIE = re.numero_aspirante
+        WHERE
+            re.numero_aspirante IN(
+                SELECT 
+                    estudiantes.NIE 
+                FROM 
+                    users
+                INNER JOIN 
+                    estudiantes
+                    ON users.id = estudiantes.user_id
+                WHERE 
+                    YEAR(users.created_at) = :ANIO_EXAMEN_ADM AND
+                    estudiantes.institucion_id = :ID_INSTITUCION
+            ) AND
+            re.id_pregunta_examen_admision IN :ID_PREGUNTAS
+        GROUP BY
+            re.id_pregunta_examen_admision,
+            re.id_literal_pregunta,
+            e.genero
+        ORDER BY
+            re.id_pregunta_examen_admision ASC,
+            re.id_literal_pregunta ASC,
+            e.genero ASC;
+        """
+
+        params = {
+            'ANIO_EXAMEN_ADM': self.examen.anio,
+            'ID_INSTITUCION': institucion_id,
+            'ID_PREGUNTAS': id_preguntas
+        }
+
+        print("PARAMETROS FRECUENCIAS LITERALES")
+        print(params)
+
+        return self.session.execute(sql, params).fetchall()
