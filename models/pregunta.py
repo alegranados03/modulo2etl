@@ -14,7 +14,7 @@ class Pregunta(db.Database):
     updated_at = Column(DateTime, nullable = True)
     
     # Propiedades relationship
-    #id_examen_admision = Column(Integer, ForeignKey(db.TBL_EXAMEN_ADMISION_FK))
+    seccion_id = Column(Integer, ForeignKey(db.TBL_SECCION_FK))
     respuestas = relationship("Respuesta")
 
     temas =  relationship("Tema", secondary=db.preguntas_temas)

@@ -16,7 +16,7 @@ class PreguntaExamenAdmision(db.Database):
     
     # Propiedades relationship
     id_examen_admision = Column(Integer, ForeignKey(db.TBL_EXAMEN_ADMISION_FK))
-    literales = relationship("LiteralExamenAdmision")
+    respuestas = relationship("LiteralExamenAdmision")
 
     temas =  relationship("Tema", secondary=db.preguntas_examen_admision_temas)
     

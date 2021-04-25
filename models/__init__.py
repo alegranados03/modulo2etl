@@ -24,7 +24,6 @@ from models.examen import *
 from models.pregunta import *
 from models.respuesta import *
 
-from models.bucket import *
 from models.bucket_tema_admision import *
 from models.bucket_deficiencia_admision import *
 from models.bucket_tema_admision_instituto import *

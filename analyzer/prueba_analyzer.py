@@ -11,8 +11,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
 
 from models import *
+import analyzer.constantes as constantes
+from analyzer import *
 
-class BasePruebaAnalyzer(threading.Thread):
+class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation):
     def __init__(self, anio, id_area_conocimiento):
         threading.Thread.__init__(self)
         self.anio = anio
@@ -31,25 +33,16 @@ class BasePruebaAnalyzer(threading.Thread):
         FUNCIONES RELACIONADAS AL CALCULO DE BUCKETS
     '''
     def construir_buckets(self):
-        print("Construir buckets")
-            
-    def obtener_bucket_tema(self, pregunta):
-        print("Obtener bucket de tema")
-    
-    def crear_bucket_tema(self, pregunta):
-        print("Crear bucket")
-    
-    def anexar_pregunta_bucket(self, bucket, pregunta):
-        print("Anexar bucket")
-    
-    def obtener_bucket_deficiencia(self, bucket_tema, literal):
-        print("Obtener bucket de deficiencia")
+         # Paso 1: Imprimir un trace del estado original del examen
+        for examen in self.examenes:
+            self.imprimir_estado_examen(examen)
 
-    def crear_bucket_deficiencia(self, bucket_tema, literal):
-        print("Crear bucket de deficiencia")
-    
-    def anexar_literal_bucket(self, bucket_deficiencia, literal):
-        print("Anexar literal bucket")
+        # Paso 2: Por cada uno de los examenes involucrados, calculamos
+        #         los buckets de temas y deficiencias involucrados
+        for examen in self.examenes:
+            self.construir_bucket_examen(examen, constantes.MODO_EXAMENES_PRUEBA)
+        
+        self.imprimir_buckets_temas()
     
     '''
         FUNCIONES RELACIONADAS A LA CREACION DE LOS BUCKETS Y PERSISTENCIA
@@ -65,26 +58,25 @@ class BasePruebaAnalyzer(threading.Thread):
         # Paso 2: Ya habiendo obtenido los ids de los examenes involucrados en el calculo
         #         procedemos a obtenerlos como objetos con todas sus relaciones
         self.examenes = self.session.query(Examen).filter(Examen.id.in_(self.ids_examenes)).all()
-
-        """for examen in self.examenes:
-            for pregunta in examen.preguntas:
-                print(pregunta.enunciado)
-
-                for tema in pregunta.temas:
-                    print(tema.nombre)
-                
-                for respuesta in pregunta.respuestas:
-                    print(respuesta.enunciado)
-                    print(respuesta.etiqueta)"""
-
-        print(self.examenes)
     
 
     '''
         DEBUGGER FUNCTIONS
     '''
-    def imprimir_estado_examen(self):
-        print("estado examen")
+    def imprimir_estado_examen(self, examen):      
+        for pregunta in examen.preguntas:
+            print("ORIGINAL: " + str(pregunta.id))
+            print("Temas: " + str(len(pregunta.temas)))
+
+            for tema in pregunta.temas:
+                print("ID=" + str(tema.id) + " " + tema.nombre)
+            
+            print("Etiquetas involucradas: ")
+
+            for literal in list(filter(lambda x: x.etiqueta is not None, pregunta.respuestas)):
+                print("ID=" + str(literal.etiqueta.id) + " " + literal.etiqueta.enunciado + " LITERAL=" + str(literal.id))
+            
+            print("")
     
     def imprimir_buckets_temas(self):
         for bucket in self.buckets_temas:
@@ -123,7 +115,9 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
         # Paso 2: Obtener los examenes que aplican para este analisis
         self.calcular_id_examenes_prueba()
         self.obtener_examenes_prueba()
-        print("Hola mundo")
+        
+        # Paso 3: Construir buckets y sus relaciones
+        self.construir_buckets()
     
     def calcular_id_examenes_prueba(self):
         # Paso 1: Obtener los examenes que, para el año a calcular, se encuentran

@@ -1,4 +1,4 @@
-from admision_analyzer import *
+from analyzer import *
 import sys
 
 worker = AdmisionAnalyzer(sys.argv[1])

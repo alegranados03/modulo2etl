@@ -23,6 +23,7 @@ TBL_INSTITUCION_FK = 'instituciones.id'
 
 TBL_EXAMEN_FK = "examenes.id"
 TBL_PREGUNTA_FK = "preguntas.id"
+TBL_SECCION_FK = "secciones.id"
 
 TBL_BUCKET_TEMA_ADMISION_FK = "bucket_tema_adm.id"
 TBL_BUCKET_TEMA_ADMISION_INSTITUTO_FK = "bucket_tema_adm_instituto.id"
