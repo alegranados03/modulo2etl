@@ -10,12 +10,18 @@ class BaseBucketCalculation:
         for pregunta in examen.preguntas:
             # Paso 2.1: Para los calculos de examenes de prueba, nada mas
             #           tomar en cuenta las preguntas cuyo seccion_id sea el que
-            #           se esta analizando
+            #           se esta analizando, como tambien que el tipo de pregunta
+            #           sea con respuesta unica (este algoritmo no soporta respuestas multiples)
             if modo == constantes.MODO_EXAMENES_PRUEBA:
                 if pregunta.seccion_id != seccion_id:
-                    print("Saltandose la pregunta")
+                    print("Saltandose la pregunta con ID=" + str(pregunta.id))
                     print("Seccion a buscar=" + str(seccion_id))
                     print("Seccion encontrada=" + str(pregunta.seccion_id))
+                    continue
+                
+                if pregunta.tipo_pregunta != constantes.RESPUESTA_PREGUNTA_UNICA:
+                    print("Saltandose la pregunta con ID=" + str(pregunta.id))
+                    print("pregunta no es de respuesta unica")
                     continue
 
             bucket = self.obtener_bucket_tema(pregunta)

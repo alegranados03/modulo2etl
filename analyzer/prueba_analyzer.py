@@ -94,6 +94,10 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
         
         # Paso 3: Construir buckets y sus relaciones
         self.construir_buckets()
+
+        # Paso 4: Construir los modelos ORM del calculo de tuplas de temas
+        #         y las etiquetas de deficiencia asociadas a dichas tuplas
+        self.almacenar_buckets()
     
     def calcular_id_examenes_prueba(self):
         # Paso 1: Obtener los examenes que, para el año a calcular, se encuentran
