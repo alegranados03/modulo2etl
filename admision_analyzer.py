@@ -12,19 +12,6 @@ from sqlalchemy.orm import scoped_session
 
 from models import *
 
-class BucketTema():
-    def __init__(self):
-        self.preguntas = []
-        self.temas = []
-        self.buckets_deficiencias = []
-        self.literales_correctos = []
-        self.referencia_bucket_tema = None
-
-class BucketDeficiencia():
-    def __init__(self):
-        self.deficiencia = -1
-        self.literales = []
-
 class BaseAdmisionAnalyzer(threading.Thread):
     def __init__(self, id_examen_admision):
         threading.Thread.__init__(self)

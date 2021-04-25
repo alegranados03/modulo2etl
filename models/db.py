@@ -5,7 +5,7 @@ from sqlalchemy.orm import scoped_session
 
 #Para Ubuntu(Testeado en la version 20.04)
 #engine = create_engine("mysql+mysqldb://root@localhost:81/tesis?unix_socket=/opt/lampp/var/mysql/mysql.sock")
-connection_string = "mysql+mysqldb://root@localhost/laravel"
+connection_string = "mysql+mysqldb://root@localhost/prueba2"
 Database = declarative_base()
 
 TBL_PROCESO_ETL_FK = "proceso_etls.id_proceso_etl"
@@ -21,12 +21,25 @@ TBL_TEMA_FK = "temas.id"
 TBL_ETIQUETA_FK = 'etiquetas.id'
 TBL_INSTITUCION_FK = 'instituciones.id'
 
+TBL_EXAMEN_FK = "examenes.id"
+TBL_PREGUNTA_FK = "preguntas.id"
+
 TBL_BUCKET_TEMA_ADMISION_FK = "bucket_tema_adm.id"
 TBL_BUCKET_TEMA_ADMISION_INSTITUTO_FK = "bucket_tema_adm_instituto.id"
 TBL_BUCKET_DEFICIENCIA_ADMISION_FK = "bucket_deficiencia_adm.id"
 
 RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"
 
+# Tablas intermedias para examenes de prueba
+examen_preguntas = Table("examenes_preguntas", Database.metadata,
+    Column("examen_id", Integer, ForeignKey(TBL_EXAMEN_FK)),
+    Column("pregunta_id", Integer, ForeignKey(TBL_PREGUNTA_FK))
+)
+
+preguntas_temas = Table("preguntas_temas", Database.metadata,
+    Column("pregunta_id", Integer, ForeignKey(TBL_PREGUNTA_FK)),
+    Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
+)
 
 # Declaracion de tablas intermedias de detalle
 preguntas_examen_admision_temas = Table("preguntas_examen_admision_temas", Database.metadata,
