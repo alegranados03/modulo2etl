@@ -89,29 +89,6 @@ class BaseAdmisionAnalyzer(threading.Thread, BaseBucketCalculation):
                 print("ID=" + str(literal.etiqueta.id) + " " + literal.etiqueta.enunciado + " LITERAL=" + str(literal.id))
             
             print("")
-    
-    def imprimir_buckets_temas(self):
-        for bucket in self.buckets_temas:
-            print("Temas: ")
-            print(bucket.temas)
-            print("Preguntas: ")
-            print(bucket.preguntas)
-            print("Literales correctos: ")
-            print(bucket.literales_correctos)
-
-            print("Deficiencias:")
-            for bucket_deficiencia in bucket.buckets_deficiencias:
-                print(bucket_deficiencia.deficiencia)
-                print(bucket_deficiencia.literales)
-            
-            print("###################")
-
-
-
-
-
-
-
 
 
 class AdmisionAnalyzer(BaseAdmisionAnalyzer):

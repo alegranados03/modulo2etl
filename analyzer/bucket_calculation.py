@@ -5,9 +5,19 @@ class BaseBucketCalculation:
     def __init__(self):
         self.buckets_temas = []
     
-    def construir_bucket_examen(self, examen, modo):
+    def construir_bucket_examen(self, examen, modo, seccion_id=-1):
         # Paso 2: Procedemos a recorrer el examen, en busqueda de temas
         for pregunta in examen.preguntas:
+            # Paso 2.1: Para los calculos de examenes de prueba, nada mas
+            #           tomar en cuenta las preguntas cuyo seccion_id sea el que
+            #           se esta analizando
+            if modo == constantes.MODO_EXAMENES_PRUEBA:
+                if pregunta.seccion_id != seccion_id:
+                    print("Saltandose la pregunta")
+                    print("Seccion a buscar=" + str(seccion_id))
+                    print("Seccion encontrada=" + str(pregunta.seccion_id))
+                    continue
+
             bucket = self.obtener_bucket_tema(pregunta)
 
             # Paso 3: Si no encontramos un bucket, lo creamos, y anexamos
@@ -87,3 +97,22 @@ class BaseBucketCalculation:
     
     def anexar_literal_bucket(self, bucket_deficiencia, literal):
         bucket_deficiencia.literales.append(literal.id)
+    
+    '''
+        DEBUGGER FUNCTIONS
+    '''
+    def imprimir_buckets_temas(self):
+        for bucket in self.buckets_temas:
+            print("Temas: ")
+            print(bucket.temas)
+            print("Preguntas: ")
+            print(bucket.preguntas)
+            print("Literales correctos: ")
+            print(bucket.literales_correctos)
+
+            print("Deficiencias:")
+            for bucket_deficiencia in bucket.buckets_deficiencias:
+                print(bucket_deficiencia.deficiencia)
+                print(bucket_deficiencia.literales)
+            
+            print("###################")

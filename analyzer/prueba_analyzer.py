@@ -15,10 +15,10 @@ import analyzer.constantes as constantes
 from analyzer import *
 
 class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation):
-    def __init__(self, anio, id_area_conocimiento):
+    def __init__(self, anio, seccion_id):
         threading.Thread.__init__(self)
         self.anio = anio
-        self.id_area_conocimiento = id_area_conocimiento
+        self.seccion_id = seccion_id
 
         self.engine = create_engine(db.connection_string)
         self.session_factory = sessionmaker(bind=self.engine)
@@ -40,7 +40,7 @@ class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation):
         # Paso 2: Por cada uno de los examenes involucrados, calculamos
         #         los buckets de temas y deficiencias involucrados
         for examen in self.examenes:
-            self.construir_bucket_examen(examen, constantes.MODO_EXAMENES_PRUEBA)
+            self.construir_bucket_examen(examen, constantes.MODO_EXAMENES_PRUEBA, self.seccion_id)
         
         self.imprimir_buckets_temas()
     
@@ -77,30 +77,6 @@ class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation):
                 print("ID=" + str(literal.etiqueta.id) + " " + literal.etiqueta.enunciado + " LITERAL=" + str(literal.id))
             
             print("")
-    
-    def imprimir_buckets_temas(self):
-        for bucket in self.buckets_temas:
-            print("Temas: ")
-            print(bucket.temas)
-            print("Preguntas: ")
-            print(bucket.preguntas)
-            print("Literales correctos: ")
-            print(bucket.literales_correctos)
-
-            print("Deficiencias:")
-            for bucket_deficiencia in bucket.buckets_deficiencias:
-                print(bucket_deficiencia.deficiencia)
-                print(bucket_deficiencia.literales)
-            
-            print("###################")
-
-
-
-
-
-
-
-
 
 class PruebaAnalyzer(BasePruebaAnalyzer):
     def __init__(self, anio, id_area_conocimiento):
