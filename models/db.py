@@ -30,6 +30,8 @@ TBL_BUCKET_TEMA_ADMISION_INSTITUTO_FK = "bucket_tema_adm_instituto.id"
 TBL_BUCKET_DEFICIENCIA_ADMISION_FK = "bucket_deficiencia_adm.id"
 
 TBL_BUCKET_TEMA_EXAMEN_PRUEBA_FK = "bucket_tema_exp.id"
+TBL_BUCKET_TEMA_EXAMEN_PRUEBA_INSTITUTO_FK = "bucket_tema_exp_ins.id"
+TBL_BUCKET_DEFICIENCIA_EXAMEN_PRUEBA_FK = "bucket_def_exp.id"
 
 RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"
 

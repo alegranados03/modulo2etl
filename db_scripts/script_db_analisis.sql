@@ -129,6 +129,12 @@ CREATE TABLE bucket_def_exp_ins(
 );
 
 
+DELETE FROM bucket_def_exp_ins;
+DELETE FROM bucket_tema_exp_ins;
+DELETE FROM bucket_def_exp;
+DELETE FROM bucket_tema_exp_detalle;
+DELETE FROM bucket_tema_exp;
+
 
 
 --CREATE TABLE bucket_tema_pregunta_adm(

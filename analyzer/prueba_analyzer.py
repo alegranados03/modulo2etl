@@ -112,7 +112,80 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
         # Paso 4: Construir los modelos ORM del calculo de tuplas de temas
         #         y las etiquetas de deficiencia asociadas a dichas tuplas
         self.almacenar_buckets()
+
+        # Paso 5: Procedemos a calcular las frecuencias a nivel de institucion
+        #         en base a genero
+        self.calcular_frecuencias_institucion_genero()
     
+    def calcular_frecuencias_institucion_genero(self):
+        print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")
+        # Paso 1: Obtenemos todas las instituciones que vamos a ocupar para calcular
+        instituciones = self.session.query(Institucion)
+
+        # Paso 2: Iteramos cada una de las instituciones y empezamos el calculo
+        for institucion in instituciones:
+            print("PROCEDEMOS A CALCULAR EL INSTITUTO CON ID=" + str(institucion.id))
+
+            # Paso 2.1: Calculamos los intentos de los estudiantes de este instituto, a tomar
+            #           en cuenta
+            self.ids_intentos = self.calcular_ids_itentos(institucion.id, self.ids_examenes)
+
+            # Paso 3: Por cada institucion, tenemos que calcular todos los buckets de temas
+            #         y sus respectivas deficiencias
+            for bucket_tema in self.buckets_temas:
+                print("------------------------------------------------")
+                print("CALCULANDO LA FRECUENCIA PARA LOS BUCKETS:")
+                print(bucket_tema.temas)
+
+                # Paso 4: Creamos el bucket de tema para la institucion, y lo llenamos con la
+                #         data inicial (numero de preguntas por genero), como tambien calculamos
+                #         los intentos por estudiante a tomar en cuenta en el calculo
+                bucket_tema_instituto = self.crear_bucket_tema_instituto(institucion, bucket_tema)
+    
+    def crear_bucket_tema_instituto(self, institucion, bucket_tema):
+        # Paso 1: Creamos el bucket de instituto, con datos por defecto a 0
+        bucket_tema_instituto = BucketTemaPruebaInstituto(
+            bucket_tema.referencia_bucket_tema.id,
+            institucion.id,
+            0, 0, 0, 0, 0, 0, 0, 0, 0
+        )
+
+        # Paso 1.1: en caso que ids_intentos sea vacio (cuando ningun usuario de ese instituto
+        #           ha hecho pruebas) retornar automaticamente y no pasar por la llamada SQL
+        #           para evitar errores
+        if len(self.ids_intentos) == 0:
+            print("M=" + str(bucket_tema_instituto.preguntas_masculino))
+            print("F=" + str(bucket_tema_instituto.preguntas_femenino))
+            return bucket_tema_instituto
+
+        # Paso 2: Obtenemos los datos generales de numero de preguntas, y lo anexamos al bucket
+        #         de instituto, los fallos y aciertos los iremos calculando mientras vayamos
+        #         iterando las etiquetas de deficiencia
+        datos_generales = self.calcular_pregunta_genero(institucion.id, bucket_tema.preguntas, self.ids_intentos)
+        cuenta_M = list(filter(lambda x: x[0] == "M", datos_generales))
+        cuenta_F = list(filter(lambda x: x[0] == "F", datos_generales))
+
+        bucket_tema_instituto.preguntas_masculino = 0
+        bucket_tema_instituto.preguntas_femenino = 0
+
+        if len(cuenta_M) > 0:
+            bucket_tema_instituto.preguntas_masculino = cuenta_M[0][1]
+        
+        if len(cuenta_F) > 0:
+            bucket_tema_instituto.preguntas_femenino = cuenta_F[0][1]
+        
+        bucket_tema_instituto.preguntas = bucket_tema_instituto.preguntas_masculino + bucket_tema_instituto.preguntas_femenino
+        
+        print("M=" + str(bucket_tema_instituto.preguntas_masculino))
+        print("F=" + str(bucket_tema_instituto.preguntas_femenino))
+
+        return bucket_tema_instituto
+
+
+    
+    '''
+        FUNCIONES DE RETORNO SQL
+    '''
     def calcular_id_examenes_prueba(self):
         # Paso 1: Obtener los examenes que, para el año a calcular, se encuentran
         #         vigentes aun
@@ -134,3 +207,88 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
 
         ids = self.session.execute(sql, params).fetchall()
         self.ids_examenes = [examen[0] for examen in ids]
+    
+    def calcular_ids_itentos(self, institucion_id, id_examenes):
+        sql = """
+        SELECT 
+            i1.examen_id,
+            i1.user_id,
+            nis1.seccion_id,
+            nis1.nota,
+            i1.id AS intento_id
+        FROM 
+            nota_intento_seccion nis1
+        INNER JOIN
+            intentos i1
+            ON nis1.intento_id = i1.id
+        INNER JOIN
+            (
+                SELECT 
+                    i.examen_id, 
+                    i.user_id, 
+                    nis.seccion_id,
+                    MAX(nis.nota) as nota_maxima
+                FROM 
+                    nota_intento_seccion nis
+                INNER JOIN 
+                    intentos i
+                    ON nis.intento_id = i.id
+                INNER JOIN
+                    estudiantes e
+                    ON i.user_id = e.user_id
+                WHERE
+                    YEAR(i.tiempo_finalizacion_real) = :ANIO_EXAMEN AND
+                    nis.seccion_id = :ID_SECCION AND
+                    e.institucion_id = :ID_INSTITUCION AND
+                    i.examen_id IN :ID_EXAMENES
+                GROUP BY
+                    i.examen_id, i.user_id, nis.seccion_id
+            ) resultado
+            ON
+            i1.examen_id = resultado.examen_id AND
+            i1.user_id = resultado.user_id AND
+            nis1.seccion_id = resultado.seccion_id AND
+            nis1.nota = resultado.nota_maxima
+        """
+    
+        params = {
+            'ANIO_EXAMEN': self.anio,
+            'ID_SECCION': self.seccion_id,
+            'ID_INSTITUCION': institucion_id,
+            'ID_EXAMENES': id_examenes
+        }
+
+        resultados = self.session.execute(sql, params).fetchall()
+        return [intento[4] for intento in resultados]
+    
+    def calcular_pregunta_genero(self, institucion_id, id_preguntas, id_intentos):
+        sql = """
+        SELECT 
+            e.genero, 
+            COUNT(*) as NUMERO_PREGUNTAS
+        FROM 
+            intentos_respuestas ir
+        INNER JOIN 
+            intentos i
+            ON i.id = ir.intento_id
+        INNER JOIN
+            estudiantes e
+            ON e.user_id = i.user_id
+        WHERE
+            ir.intento_id IN :ID_INTENTOS AND
+            ir.pregunta_id IN :ID_PREGUNTAS AND
+            e.institucion_id = :ID_INSTITUCION
+        GROUP BY
+            e.genero; 
+        """
+
+        params = {
+            'ID_INTENTOS': id_intentos,
+            'ID_INSTITUCION': institucion_id,
+            'ID_PREGUNTAS': id_preguntas
+        }
+
+        print("PARAMETROS FRECUENCIA PREGUNTAS")
+        print(params)
+
+        return self.session.execute(sql, params).fetchall()

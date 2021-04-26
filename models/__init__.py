@@ -31,3 +31,5 @@ from models.bucket_deficiencia_admision_instituto import *
 
 from models.bucket_tema_examen_prueba import *
 from models.bucket_deficiencia_examen_prueba import *
+from models.bucket_tema_examen_prueba_instituto import *
+from models.bucket_deficiencia_examen_prueba_instituto import *
