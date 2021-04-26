@@ -154,6 +154,50 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
                 print("EXITOS TOTALES = " + str(bucket_tema_instituto.aciertos))
                 print("EXITOS M=" + str(bucket_tema_instituto.aciertos_masculino))
                 print("EXITOS F=" + str(bucket_tema_instituto.aciertos_femenino))
+
+                # Paso 7: Iteramos los buckets de deficiencia, y empezamos a realizar el calculo
+                #         de frecuencias para las deficiencias
+                for bucket_deficiencia in bucket_tema.buckets_deficiencias:
+                    # Paso 8: Obtenemos la referencia correspondiente en DB
+                    referencia_bucket_deficiencia = list(filter(lambda x: x.etiqueta_id == bucket_deficiencia.deficiencia, 
+                        bucket_tema.referencia_bucket_tema.deficiencias))
+                    
+                    if (len(referencia_bucket_deficiencia) == 0):
+                        raise Exception("No se encontro referencia a bucket de deficiencia")
+                    else:
+                        referencia_bucket_deficiencia = referencia_bucket_deficiencia[0]
+                    
+                    # Paso 9: Nos limitamos a la data involucrada para este bucket de deficiencia
+                    datos_frec_deficiencia = list(filter(lambda x: x[0] in bucket_tema.preguntas 
+                        and (x[1] in bucket_deficiencia.literales),
+                        datos_frecuencia))
+                    
+                    # Paso 10: Con la data filtrada procedemos a crear buckets de deficiencia
+                    bucket_deficiencia_instituto = self.crear_bucket_deficiencia_instituto(referencia_bucket_deficiencia)
+                    for frecuencia_deficiencia in datos_frec_deficiencia:
+                        if (frecuencia_deficiencia[2] == "M"):
+                            bucket_deficiencia_instituto.fallos_masculino = bucket_deficiencia_instituto.fallos_masculino + frecuencia_deficiencia[3]
+                        else:
+                            bucket_deficiencia_instituto.fallos_femenino = bucket_deficiencia_instituto.fallos_femenino + frecuencia_deficiencia[3]
+                    
+                    # Paso 11: Calculamos fallos totales a nivel de bucket de deficiencia, como a nivel de
+                    #          bucket de tema que contiene dicha deficiencia, ademas de esto lo agregamos
+                    #          al bucket de tema, para persistirlo
+                    bucket_deficiencia_instituto.fallos = bucket_deficiencia_instituto.fallos_masculino + bucket_deficiencia_instituto.fallos_femenino
+                    bucket_tema_instituto.fallos = bucket_tema_instituto.fallos + bucket_deficiencia_instituto.fallos
+                    bucket_tema_instituto.fallos_masculino = bucket_tema_instituto.fallos_masculino + bucket_deficiencia_instituto.fallos_masculino
+                    bucket_tema_instituto.fallos_femenino = bucket_tema_instituto.fallos_femenino + bucket_deficiencia_instituto.fallos_femenino
+
+                    bucket_tema_instituto.deficiencias.append(bucket_deficiencia_instituto)
+                    
+                    print("PARA ESTE BUCKET DE DEFICIENCIA, LA FRECUENCIA DE FALLOS ES: ")
+                    print(bucket_deficiencia.deficiencia)
+                    print("FALLOS TOTALES: " + str(bucket_deficiencia_instituto.fallos))
+                    print("FALLOS M=" + str(bucket_deficiencia_instituto.fallos_masculino))
+                    print("FALLOS F=" + str(bucket_deficiencia_instituto.fallos_femenino))
+                
+                self.session.add(bucket_tema_instituto)
+            self.session.commit()
     
     def crear_bucket_tema_instituto(self, institucion, bucket_tema):
         # Paso 1: Creamos el bucket de instituto, con datos por defecto a 0
@@ -185,6 +229,13 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
         print("F=" + str(bucket_tema_instituto.preguntas_femenino))
 
         return bucket_tema_instituto
+    
+    def crear_bucket_deficiencia_instituto(self, referencia_bucket_deficiencia):
+        bucket_deficiencia_instituto = BucketDeficienciaPruebaInstituto(
+            None, referencia_bucket_deficiencia.id, 0, 0, 0
+        );
+
+        return bucket_deficiencia_instituto;
 
     def calcular_aciertos_genero(self, bucket_tema, bucket_tema_instituto, datos_frecuencia):
         # Paso 1: seteamos todo a 0 otra vez, para asegurarnos que en caso el for no encuentre
