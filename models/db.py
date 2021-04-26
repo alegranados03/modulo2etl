@@ -29,6 +29,8 @@ TBL_BUCKET_TEMA_ADMISION_FK = "bucket_tema_adm.id"
 TBL_BUCKET_TEMA_ADMISION_INSTITUTO_FK = "bucket_tema_adm_instituto.id"
 TBL_BUCKET_DEFICIENCIA_ADMISION_FK = "bucket_deficiencia_adm.id"
 
+TBL_BUCKET_TEMA_EXAMEN_PRUEBA_FK = "bucket_tema_exp.id"
+
 RUTA_ARCHIVOS = "C:\\xampp7\\htdocs\\Tesis-2020\\public\\csv\\"
 
 # Tablas intermedias para examenes de prueba
@@ -42,7 +44,7 @@ preguntas_temas = Table("preguntas_temas", Database.metadata,
     Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
 )
 
-# Declaracion de tablas intermedias de detalle
+# Declaracion de tablas intermedias de detalle para buckets de examen de admision
 preguntas_examen_admision_temas = Table("preguntas_examen_admision_temas", Database.metadata,
     Column("id_pregunta_ex_adm", Integer, ForeignKey(TBL_PREGUNTA_EXAMEN_ADMISION_FK)),
     Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
@@ -50,5 +52,11 @@ preguntas_examen_admision_temas = Table("preguntas_examen_admision_temas", Datab
 
 bucket_tema_adm_detalle = Table("bucket_tema_adm_detalle", Database.metadata,
     Column("bucket_tema_adm_id", Integer, ForeignKey(TBL_BUCKET_TEMA_ADMISION_FK)),
+    Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
+)
+
+# Declaracion de tablas intermedias de detalle para buckets de examenes de prueba
+bucket_tema_exp_detalle = Table("bucket_tema_exp_detalle", Database.metadata,
+    Column("bucket_tema_exp_id", Integer, ForeignKey(TBL_BUCKET_TEMA_EXAMEN_PRUEBA_FK)),
     Column("tema_id", Integer, ForeignKey(TBL_TEMA_FK))
 )

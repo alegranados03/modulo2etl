@@ -49,7 +49,21 @@ class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation):
         EN BASE DE DATOS
     '''
     def almacenar_buckets(self):
-        print("Almacenar buckets")
+        for bucket_tema in self.buckets_temas:
+            # Paso 2: Agregando informacion basica del tema
+            bucket = BucketTemaExamenPrueba(self.anio, self.seccion_id)
+            bucket.temas = self.session.query(Tema).filter(Tema.id.in_(bucket_tema.temas)).all()
+
+            # Paso 3: Agregando buckets de deficiencia
+            bucket.deficiencias = []
+            for bucket_deficiencia in bucket_tema.buckets_deficiencias:
+                bucket2 = BucketDeficienciaExamenPrueba(None, bucket_deficiencia.deficiencia)
+                bucket.deficiencias.append(bucket2)
+            
+            bucket_tema.referencia_bucket_tema = bucket
+            self.session.add(bucket)
+        
+        self.session.commit()
     
     '''
         HELPER FUNCTIONS

@@ -28,3 +28,6 @@ from models.bucket_tema_admision import *
 from models.bucket_deficiencia_admision import *
 from models.bucket_tema_admision_instituto import *
 from models.bucket_deficiencia_admision_instituto import *
+
+from models.bucket_tema_examen_prueba import *
+from models.bucket_deficiencia_examen_prueba import *
