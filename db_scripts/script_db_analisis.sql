@@ -69,6 +69,68 @@ DELETE FROM bucket_deficiencia_adm;
 DELETE FROM bucket_tema_adm_detalle;
 DELETE FROM bucket_tema_adm;
 
+
+-- Tablas relacionadas a la metadata de un bucket de
+-- tema y deficiencia (etiqueta) para examenes de prueba
+CREATE TABLE bucket_tema_exp(
+    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    anio BIGINT(20) UNSIGNED NOT NULL,
+    seccion_id BIGINT(20) UNSIGNED NOT NULL,
+    FOREIGN KEY(seccion_id) REFERENCES secciones(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bucket_tema_exp_detalle(
+    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    bucket_tema_exp_id BIGINT(20) UNSIGNED NOT NULL,
+    tema_id BIGINT(20) UNSIGNED NOT NULL,
+    FOREIGN KEY(bucket_tema_exp_id) REFERENCES bucket_tema_exp(id) ON DELETE CASCADE,
+    FOREIGN KEY(tema_id) REFERENCES temas(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bucket_def_exp(
+    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    bucket_tema_exp_id BIGINT(20) UNSIGNED NOT NULL,
+    etiqueta_id BIGINT(20) UNSIGNED NOT NULL,
+    FOREIGN KEY(bucket_tema_exp_id) REFERENCES bucket_tema_exp(id) ON DELETE CASCADE,
+    FOREIGN KEY(etiqueta_id) REFERENCES etiquetas(id) ON DELETE CASCADE 
+);
+
+
+-- Tablas relacionadas con el almacenado de informacion
+-- para las distintas capas a soportar
+
+-- Capas para instituciones
+CREATE TABLE bucket_tema_exp_ins(
+    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    bucket_tema_exp_id BIGINT(20) UNSIGNED NOT NULL,
+    institucion_id BIGINT(20) UNSIGNED NOT NULL,
+    preguntas INT,
+    preguntas_masculino INT,
+    preguntas_femenino INT,
+    aciertos INT,
+    aciertos_masculino INT,
+    aciertos_femenino INT,
+    fallos INT,
+    fallos_masculino INT,
+    fallos_femenino INT,
+    FOREIGN KEY(bucket_tema_exp_id) REFERENCES bucket_tema_exp(id) ON DELETE CASCADE,
+    FOREIGN KEY(institucion_id) REFERENCES instituciones(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bucket_def_exp_ins(
+    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    bucket_tema_exp_ins_id BIGINT(20) UNSIGNED NOT NULL,
+    bucket_def_exp_id BIGINT(20) UNSIGNED NOT NULL,
+    fallos INT,
+    fallos_masculino INT,
+    fallos_femenino INT,
+    FOREIGN KEY(bucket_tema_exp_ins_id) REFERENCES bucket_tema_exp_ins(id) ON DELETE CASCADE,
+    FOREIGN KEY(bucket_def_exp_id) REFERENCES bucket_def_exp(id) ON DELETE CASCADE
+);
+
+
+
+
 --CREATE TABLE bucket_tema_pregunta_adm(
 --    id BIGINT(20) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
 --    bucket_tema_adm_id BIGINT(20) UNSIGNED NOT NULL,

@@ -1,0 +1,103 @@
+Bibliografia:
+https://thispointer.com/mysql-select-row-with-max-value-for-each-group/
+
+Sentencias SQL a ocupar
+
+-> Obtener cual es el valor de la mayor nota, de un examen (seccion determinada) para un estudiante
+   (se le agrega YEAR nada mas para tomar en cuenta la mayor nota obtenida ese año)
+SELECT 
+    i.examen_id, 
+    i.user_id, 
+    nis.seccion_id,
+    MAX(nis.nota) as nota_maxima
+FROM 
+    nota_intento_seccion nis
+INNER JOIN 
+    intentos i
+    ON nis.intento_id = i.id
+WHERE
+    YEAR(i.tiempo_finalizacion_real) = 2021 AND
+    nis.seccion_id = 1
+GROUP BY
+    i.examen_id, i.user_id, nis.seccion_id
+
+-> Obtener la row(rows en caso que haya empate de mayor nota) del intento que es
+   la mayor nota obtenida para un examen, usuario, seccion determinado
+
+SELECT 
+    i1.examen_id,
+    i1.user_id,
+    nis1.seccion_id,
+    nis1.nota,
+    i1.id AS intento_id
+FROM 
+    nota_intento_seccion nis1
+INNER JOIN
+    intentos i1
+	ON nis1.intento_id = i1.id
+INNER JOIN
+    (
+        SELECT 
+            i.examen_id, 
+            i.user_id, 
+            nis.seccion_id,
+            MAX(nis.nota) as nota_maxima
+        FROM 
+            nota_intento_seccion nis
+        INNER JOIN 
+            intentos i
+            ON nis.intento_id = i.id
+        WHERE
+            YEAR(i.tiempo_finalizacion_real) = 2021 AND
+            nis.seccion_id = 1
+        GROUP BY
+            i.examen_id, i.user_id, nis.seccion_id
+    ) resultado
+    ON
+    i1.examen_id = resultado.examen_id AND
+    i1.user_id = resultado.user_id AND
+    nis1.seccion_id = resultado.seccion_id AND
+    nis1.nota = resultado.nota_maxima
+
+-> Obtener la row(rows en caso que haya empate de mayor nota) del intento que es
+   la mayor nota obtenida para un examen, usuario, seccion determinado para el instituto
+   evaluado en este momento
+
+SELECT 
+    i1.examen_id,
+    i1.user_id,
+    nis1.seccion_id,
+    nis1.nota,
+    i1.id AS intento_id
+FROM 
+    nota_intento_seccion nis1
+INNER JOIN
+    intentos i1
+	ON nis1.intento_id = i1.id
+INNER JOIN
+    (
+        SELECT 
+            i.examen_id, 
+            i.user_id, 
+            nis.seccion_id,
+            MAX(nis.nota) as nota_maxima
+        FROM 
+            nota_intento_seccion nis
+        INNER JOIN 
+            intentos i
+            ON nis.intento_id = i.id
+        INNER JOIN
+            estudiantes e
+            ON i.user_id = e.user_id
+        WHERE
+            YEAR(i.tiempo_finalizacion_real) = 2021 AND
+            nis.seccion_id = 1 AND
+            e.institucion_id = 1
+        GROUP BY
+            i.examen_id, i.user_id, nis.seccion_id
+    ) resultado
+    ON
+    i1.examen_id = resultado.examen_id AND
+    i1.user_id = resultado.user_id AND
+    nis1.seccion_id = resultado.seccion_id AND
+    nis1.nota = resultado.nota_maxima
