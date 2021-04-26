@@ -141,6 +141,19 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
                 #         data inicial (numero de preguntas por genero), como tambien calculamos
                 #         los intentos por estudiante a tomar en cuenta en el calculo
                 bucket_tema_instituto = self.crear_bucket_tema_instituto(institucion, bucket_tema)
+
+                # Paso 5: Procedemos a calcular las frecuencias (por genero) de cada uno de lo literales
+                #         de las preguntas involugradas en este bucket
+                datos_frecuencia = self.calcular_frecuencia_literales_genero(institucion.id, bucket_tema.preguntas, self.ids_intentos)
+
+                # Paso 6: En base a las frecuencias procedemos a obtener y calcular la frecuencia de aciertos
+                #         respecto a las preguntas que cubre este bucket
+                self.calcular_aciertos_genero(bucket_tema, bucket_tema_instituto, datos_frecuencia)
+
+                print("PARA ESTE BUCKET DE TEMAS, LA FRECUENCIA DE EXITOS ES: ")
+                print("EXITOS TOTALES = " + str(bucket_tema_instituto.aciertos))
+                print("EXITOS M=" + str(bucket_tema_instituto.aciertos_masculino))
+                print("EXITOS F=" + str(bucket_tema_instituto.aciertos_femenino))
     
     def crear_bucket_tema_instituto(self, institucion, bucket_tema):
         # Paso 1: Creamos el bucket de instituto, con datos por defecto a 0
@@ -149,14 +162,6 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
             institucion.id,
             0, 0, 0, 0, 0, 0, 0, 0, 0
         )
-
-        # Paso 1.1: en caso que ids_intentos sea vacio (cuando ningun usuario de ese instituto
-        #           ha hecho pruebas) retornar automaticamente y no pasar por la llamada SQL
-        #           para evitar errores
-        if len(self.ids_intentos) == 0:
-            print("M=" + str(bucket_tema_instituto.preguntas_masculino))
-            print("F=" + str(bucket_tema_instituto.preguntas_femenino))
-            return bucket_tema_instituto
 
         # Paso 2: Obtenemos los datos generales de numero de preguntas, y lo anexamos al bucket
         #         de instituto, los fallos y aciertos los iremos calculando mientras vayamos
@@ -181,7 +186,25 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
 
         return bucket_tema_instituto
 
+    def calcular_aciertos_genero(self, bucket_tema, bucket_tema_instituto, datos_frecuencia):
+        # Paso 1: seteamos todo a 0 otra vez, para asegurarnos que en caso el for no encuentre
+        #         resultados (lo que sorprendentemente significaria que nadie acerto a la pregunta)
+        #         automaticamente determine que hubo 0 aciertos
+        bucket_tema_instituto.aciertos = 0
+        bucket_tema_instituto.aciertos_masculino = 0
+        bucket_tema_instituto.aciertos_femenino = 0
 
+        # Paso 2: Buscamos los literales de respuesta
+        frecuencia_aciertos = list(filter(lambda x: x[0] in bucket_tema.preguntas 
+            and (x[1] in bucket_tema.literales_correctos), datos_frecuencia))
+        
+        for frecuencia_acierto in frecuencia_aciertos:
+            if frecuencia_acierto[2] == "M":
+                bucket_tema_instituto.aciertos_masculino = bucket_tema_instituto.aciertos_masculino + frecuencia_acierto[3]
+            else:
+                bucket_tema_instituto.aciertos_femenino = bucket_tema_instituto.aciertos_femenino + frecuencia_acierto[3]
+        
+        bucket_tema_instituto.aciertos = bucket_tema_instituto.aciertos_masculino + bucket_tema_instituto.aciertos_femenino
     
     '''
         FUNCIONES DE RETORNO SQL
@@ -282,13 +305,55 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
             e.genero; 
         """
 
+        # NOTA: Se ocupa el operador ternario con la lista None para evitar
+        #       errores de sintaxis por parte de SQLAlchemy en la construccion
+        #       de la query cuando se detecta que no hay intentos que evaluar
         params = {
-            'ID_INTENTOS': id_intentos,
+            'ID_INTENTOS': [None] if len(id_intentos) == 0 else id_intentos,
             'ID_INSTITUCION': institucion_id,
             'ID_PREGUNTAS': id_preguntas
         }
 
         print("PARAMETROS FRECUENCIA PREGUNTAS")
+        print(params)
+
+        return self.session.execute(sql, params).fetchall()
+    
+    def calcular_frecuencia_literales_genero(self, institucion_id, id_preguntas, id_intentos):
+        sql = """
+        SELECT 
+            ir.pregunta_id,
+            ir.respuesta_id,
+            e.genero, 
+            COUNT(*) as FRECUENCIA
+        FROM 
+            intentos_respuestas ir
+        INNER JOIN 
+            intentos i
+            ON i.id = ir.intento_id
+        INNER JOIN
+            estudiantes e
+            ON e.user_id = i.user_id
+        WHERE
+            ir.intento_id IN :ID_INTENTOS AND
+            ir.pregunta_id IN :ID_PREGUNTAS AND
+            e.institucion_id = :ID_INSTITUCION
+        GROUP BY
+            ir.pregunta_id,
+            ir.respuesta_id,
+            e.genero;
+        """
+
+        # NOTA: Se ocupa el operador ternario con la lista None para evitar
+        #       errores de sintaxis por parte de SQLAlchemy en la construccion
+        #       de la query cuando se detecta que no hay intentos que evaluar
+        params = {
+            'ID_INTENTOS': [None] if len(id_intentos) == 0 else id_intentos,
+            'ID_INSTITUCION': institucion_id,
+            'ID_PREGUNTAS': id_preguntas
+        }
+
+        print("PARAMETROS FRECUENCIA LITERALES")
         print(params)
 
         return self.session.execute(sql, params).fetchall()
