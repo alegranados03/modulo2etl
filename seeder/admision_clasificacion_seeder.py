@@ -13,7 +13,7 @@ class Pregunta:
 id_inicio_pregunta = 391
 id_final_pregunta = 416
 seccion_id = 1
-id_examen_admision = 1
+id_examen_admision = 2
 
 
 suffix = "$"
@@ -78,6 +78,17 @@ session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 session = Session()
 
+# Paso 1: Eliminar referencias de literal_examen_admision
+sql = """
+    UPDATE literal_examen_admision SET etiqueta_id = NULL WHERE id_pregunta_examen_admision IN(
+        SELECT id FROM pregunta_examen_admision WHERE id_examen_admision = :ID_EXAMEN_ADMISION
+    )
+"""
+params = {
+    'ID_EXAMEN_ADMISION': id_examen_admision,
+}
+session.execute(sql, params)
+session.commit()
 
 # Paso 2: Insertando temas a ocupar
 sql = "DELETE FROM temas WHERE nombre LIKE '%$'"
