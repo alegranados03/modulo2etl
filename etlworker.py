@@ -649,7 +649,7 @@ class EtlComplexWorker(EtlWorker):
             
             if (saltar_agregado == False):
                 try:
-                    literal = list(filter(lambda x: x.id_referencia == int(datos[index_id_literal]), pregunta.literales))[0]
+                    literal = list(filter(lambda x: x.id_referencia == int(datos[index_id_literal]), pregunta.respuestas))[0]
                 except:
                     self.log("WARNING", "Linea " + str(linea_archivo) + ": No se ha encontrado el literal con ID=" + datos[index_id_literal] + " para la pregunta con ID=" + str(pregunta.id) + ", se ha procedido a saltarse la pregunta")
                     saltar_agregado = True
@@ -668,7 +668,7 @@ class EtlComplexWorker(EtlWorker):
                     id_estudiante_previo = int(datos[index_num_aspirante])
                 else:
                     if (id_estudiante_previo != int(datos[index_num_aspirante])):
-                        #self.log("INFO", "Respuestas para el alumno con ID=" + datos[index_num_aspirante] + " agregadas con exito")
+                        self.log("INFO", "Respuestas para el alumno con ID=" + datos[index_num_aspirante] + " agregadas con exito")
                         id_estudiante_previo = int(datos[index_num_aspirante])
 
             #self.log("INFO", "Respuesta a la pregunta con ID=" + datos[index_id_pregunta] + " del estudiante con ID=" + datos[index_num_aspirante] +  " agregada con exito")
