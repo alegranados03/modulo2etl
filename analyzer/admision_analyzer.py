@@ -17,12 +17,11 @@ from analyzer import *
 class BaseAdmisionAnalyzer(threading.Thread, BaseBucketCalculation, AnalysisProcess):
     def __init__(self, id_examen_admision, id_proceso_analisis):
         threading.Thread.__init__(self)
+        BaseBucketCalculation.__init__(self)
         AnalysisProcess.__init__(self, id_proceso_analisis)
-        
+
         self.id_examen_admision = id_examen_admision
         self.examen = None
-
-        self.buckets_temas = []
     
     '''
         FUNCIONES RELACIONADAS AL CALCULO DE BUCKETS
@@ -95,8 +94,8 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
     def run(self):
         # Paso 0: TODO: crear validaciones previas antes de ejecutar analyzer
 
-        # Paso 1: Cambiar el estado del proceso de analisis que ha invocado
-        #         a esta instancia
+        # Paso 1: Inicializar el proceso de analisis y cambiar su estado
+        self.inicializar_proceso_analisis()
 
         # Paso 1.2: Eliminar rastros de cualquier calculo realizado previamente
         self.eliminar_analisis_previo()
