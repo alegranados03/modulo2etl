@@ -14,20 +14,16 @@ from models import *
 import analyzer.constantes as constantes
 from analyzer import *
 
-class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation):
-    def __init__(self, anio, seccion_id):
+class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation, AnalysisProcess):
+    def __init__(self, anio, seccion_id, id_proceso_analisis):
         threading.Thread.__init__(self)
+        BaseBucketCalculation.__init__(self)
+        AnalysisProcess.__init__(self, id_proceso_analisis)
+
         self.anio = anio
         self.seccion_id = seccion_id
-
-        self.engine = create_engine(db.connection_string)
-        self.session_factory = sessionmaker(bind=self.engine)
-        self.Session = scoped_session(self.session_factory)
-        self.session = self.Session()
         self.examenes = None
         self.ids_examenes = None
-
-        self.buckets_temas = []
     
     '''
         FUNCIONES RELACIONADAS AL CALCULO DE BUCKETS
@@ -99,8 +95,11 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
     def run(self):
         # Paso 0: TODO: crear validaciones previas antes de ejecutar analyzer
 
-        # Paso 1: Cambiar el estado del proceso de analisis que ha invocado
-        #         a esta instancia
+        # Paso 1: Inicializar el proceso de analisis y cambiar su estado
+        self.inicializar_proceso_analisis()
+
+        # Paso 1.2: Eliminar rastros de cualquier calculo realizado previamente
+        self.eliminar_analisis_previo()
 
         # Paso 2: Obtener los examenes que aplican para este analisis
         self.calcular_id_examenes_prueba()
@@ -116,6 +115,9 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
         # Paso 5: Procedemos a calcular las frecuencias a nivel de institucion
         #         en base a genero
         self.calcular_frecuencias_institucion_genero()
+    
+    def eliminar_analisis_previo(self):
+        print("POR HACER ELIMINACION")
     
     def calcular_frecuencias_institucion_genero(self):
         print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")
