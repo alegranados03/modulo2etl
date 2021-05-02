@@ -113,6 +113,11 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
         # Paso 5: Procedemos a calcular las frecuencias a nivel de institucion
         #         en base a genero
         self.calcular_frecuencias_institucion_genero()
+
+        # Paso 6: Terminando correctamente el analisis, reflejar que el proceso
+        #         ha sido terminado exitosamente
+        self.cambiar_estado("FINALIZADO")
+        self.actualizar_progreso(1.0)
     
     def eliminar_analisis_previo(self):
         print("POR HACER ELIMINACION")
@@ -192,6 +197,9 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
                     print("FALLOS F=" + str(bucket_deficiencia_instituto.fallos_femenino))
                 
                 self.session.add(bucket_tema_instituto)
+            
+            self.instituciones_procesadas = self.instituciones_procesadas + 1
+            self.actualizar_progreso()
             self.session.commit()
 
     
