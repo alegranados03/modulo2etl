@@ -14,15 +14,12 @@ from models import *
 import analyzer.constantes as constantes
 from analyzer import *
 
-class BaseAdmisionAnalyzer(threading.Thread, BaseBucketCalculation):
-    def __init__(self, id_examen_admision):
+class BaseAdmisionAnalyzer(threading.Thread, BaseBucketCalculation, AnalysisProcess):
+    def __init__(self, id_examen_admision, id_proceso_analisis):
         threading.Thread.__init__(self)
+        AnalysisProcess.__init__(self, id_proceso_analisis)
+        
         self.id_examen_admision = id_examen_admision
-
-        self.engine = create_engine(db.connection_string)
-        self.session_factory = sessionmaker(bind=self.engine)
-        self.Session = scoped_session(self.session_factory)
-        self.session = self.Session()
         self.examen = None
 
         self.buckets_temas = []
@@ -92,14 +89,17 @@ class BaseAdmisionAnalyzer(threading.Thread, BaseBucketCalculation):
 
 
 class AdmisionAnalyzer(BaseAdmisionAnalyzer):
-    def __init__(self, id_examen_admision):
-        BaseAdmisionAnalyzer.__init__(self, id_examen_admision)
+    def __init__(self, id_examen_admision, id_proceso_analisis):
+        BaseAdmisionAnalyzer.__init__(self, id_examen_admision, id_proceso_analisis)
     
     def run(self):
         # Paso 0: TODO: crear validaciones previas antes de ejecutar analyzer
 
         # Paso 1: Cambiar el estado del proceso de analisis que ha invocado
         #         a esta instancia
+
+        # Paso 1.2: Eliminar rastros de cualquier calculo realizado previamente
+        self.eliminar_analisis_previo()
 
         # Paso 2: Obtener el examen de admision 
         self.obtener_examen()
@@ -114,6 +114,9 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
         # Paso 5: Procedemos a calcular las frecuencias a nivel de institucion
         #         en base a genero
         self.calcular_frecuencias_institucion_genero()
+    
+    def eliminar_analisis_previo(self):
+        print("POR HACER ELIMINACION")
     
     def calcular_frecuencias_institucion_genero(self):
         print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")

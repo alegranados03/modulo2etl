@@ -10,10 +10,10 @@ class Pregunta:
         self.etiquetas = etiquetas
 
 # Paso 0: Variable de configuracion
-id_inicio_pregunta = 391
-id_final_pregunta = 416
+id_inicio_pregunta = 1
+id_final_pregunta = 26
 seccion_id = 1
-id_examen_admision = 2
+id_examen_admision = 1
 
 
 suffix = "$"

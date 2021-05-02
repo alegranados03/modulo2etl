@@ -1,4 +1,4 @@
-from etlworker import *
+from etl import *
 import time
 import models.db as db
 import subprocess
