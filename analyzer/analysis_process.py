@@ -54,9 +54,9 @@ class AnalysisProcess:
     def log(self, msg_type, msg):
         if (msg_type == constantes.MSG_INFO):
             self.log_data = self.log_data + ";" + msg
-        else if (msg_type == costantes.MSG_WARN):
+        elif (msg_type == costantes.MSG_WARN):
             self.log_warning = self.log_warning + ";" + msg
-        else if (msg_type == costantes.ERROR):
+        elif (msg_type == costantes.ERROR):
             self.log_error = self.log_error + ";" + msg
         
         print(msg)

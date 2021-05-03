@@ -120,7 +120,14 @@ class AdmisionAnalyzer(BaseAdmisionAnalyzer):
         self.actualizar_progreso(1.0)
     
     def eliminar_analisis_previo(self):
-        print("POR HACER ELIMINACION")
+        sql = """
+            DELETE FROM bucket_tema_adm WHERE id_examen_admision = :ID_EXAMEN_ADMISION
+        """
+        params = {
+            'ID_EXAMEN_ADMISION': self.id_examen_admision
+        }
+        self.session.execute(sql, params)
+        
     
     def calcular_frecuencias_institucion_genero(self):
         print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")

@@ -16,11 +16,11 @@ class BucketDeficienciaPruebaInstituto(db.Database):
     
     # Propiedades relationship
     bucket_def_exp_id = Column(Integer, ForeignKey(db.TBL_BUCKET_DEFICIENCIA_EXAMEN_PRUEBA_FK))
-    bucket_tema_exp_ins_id = Column(Integer, ForeignKey(db.TBL_BUCKET_TEMA_EXAMEN_PRUEBA_INSTITUTO_FK))
+    bucket_tema_exp_inst_id = Column(Integer, ForeignKey(db.TBL_BUCKET_TEMA_EXAMEN_PRUEBA_INSTITUTO_FK))
     
-    def __init__(self, bucket_tema_exp_ins_id, bucket_def_exp_id, 
+    def __init__(self, bucket_tema_exp_inst_id, bucket_def_exp_id, 
         fallos, fallos_masculino, fallos_femenino):
-        self.bucket_tema_exp_ins_id = bucket_tema_exp_ins_id
+        self.bucket_tema_exp_inst_id = bucket_tema_exp_inst_id
         self.bucket_def_exp_id = bucket_def_exp_id
         self.fallos = fallos
         self.fallos_masculino = fallos_masculino

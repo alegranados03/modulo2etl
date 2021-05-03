@@ -89,8 +89,8 @@ class BasePruebaAnalyzer(threading.Thread, BaseBucketCalculation, AnalysisProces
             print("")
 
 class PruebaAnalyzer(BasePruebaAnalyzer):
-    def __init__(self, anio, id_area_conocimiento):
-        BasePruebaAnalyzer.__init__(self, anio, id_area_conocimiento)
+    def __init__(self, anio, id_area_conocimiento, id_proceso_analisis):
+        BasePruebaAnalyzer.__init__(self, anio, id_area_conocimiento, id_proceso_analisis)
     
     def run(self):
         # Paso 0: TODO: crear validaciones previas antes de ejecutar analyzer
@@ -115,9 +115,22 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
         # Paso 5: Procedemos a calcular las frecuencias a nivel de institucion
         #         en base a genero
         self.calcular_frecuencias_institucion_genero()
+
+        # Paso 6: Terminando correctamente el analisis, reflejar que el proceso
+        #         ha sido terminado exitosamente
+        self.cambiar_estado("FINALIZADO")
+        self.actualizar_progreso(1.0)
     
     def eliminar_analisis_previo(self):
-        print("POR HACER ELIMINACION")
+        sql = """
+            DELETE FROM bucket_tema_exp WHERE ANIO = :ANIO AND seccion_id = :SECCION_ID
+        """
+        params = {
+            'ANIO': self.anio,
+            'SECCION_ID': self.seccion_id
+        }
+        self.session.execute(sql, params)
+
     
     def calcular_frecuencias_institucion_genero(self):
         print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")
@@ -199,6 +212,9 @@ class PruebaAnalyzer(BasePruebaAnalyzer):
                     print("FALLOS F=" + str(bucket_deficiencia_instituto.fallos_femenino))
                 
                 self.session.add(bucket_tema_instituto)
+
+            self.instituciones_procesadas = self.instituciones_procesadas + 1
+            self.actualizar_progreso()
             self.session.commit()
     
     def crear_bucket_tema_instituto(self, institucion, bucket_tema):
