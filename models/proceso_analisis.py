@@ -10,6 +10,7 @@ class ProcesoAnalisis(db.Database):
     id = Column(Integer, primary_key = True)
     estado = Column(String)
     tipo_analisis = Column(String)
+    tipo_examen = Column(String)
     fecha_hora = Column(DateTime, nullable = True)
     pcj_analisis = Column(Integer)
     ejecutar_ahora = Column(Integer)
@@ -21,12 +22,13 @@ class ProcesoAnalisis(db.Database):
     seccion_id = Column(Integer, ForeignKey(db.TBL_SECCION_FK), nullable=True)
     
     def __init__(self, 
-        estado, tipo_analisis, 
+        estado, tipo_analisis, tipo_examen,
         fecha_hora, pcj_analisis, ejecutar_ahora,
         created_at, updated_at):
         
         self.estado = estado
         self.tipo_analisis = tipo_analisis
+        self.tipo_examen = tipo_examen
         self.fecha_hora = fecha_hora
         self.pcj_analisis = pcj_analisis
         self.ejecutar_ahora = ejecutar_ahora

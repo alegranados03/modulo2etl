@@ -13,7 +13,11 @@ def analysis_daemon():
         print("Consultando a la base de datos")
 
         with engine.connect() as con:
-            sql = "SELECT * FROM proceso_analisis WHERE (ejecutar_ahora = 0 AND fecha_hora < NOW() AND estado <> 'EJECUTANDO' AND estado <> 'TERMINADO' AND estado <> 'ERROR') OR (ejecutar_ahora = 1 AND estado = 'ENPROGRESO' AND estado <> 'TERMINADO')"
+            sql = """
+                SELECT * FROM proceso_analisis 
+                WHERE 
+                    (tipo_analisis = 'PROGRAMADO' AND fecha_hora < NOW() AND estado <> 'EJECUTANDO' AND estado <> 'FINALIZADO' AND estado <> 'ERROR') 
+                    OR (tipo_analisis = 'INSTANTANEO' AND estado = 'ENPROGRESO' AND estado <> 'FINALIZADO')"""
             rs = con.execute(sql)
             
             for row in rs:
@@ -23,12 +27,12 @@ def analysis_daemon():
                 print("Se encontro ETL con id=" + str(row[0]))
                 print("Determinando el tipo de analisis a realizar")
                 
-                if (row[2] == "ADMISION"):
-                    p = AdmisionAnalyzer(row[7], row[0])
+                if (row[3] == "ADMISION"):
+                    p = AdmisionAnalyzer(row[8], row[0])
                     p.start()
                     print("INICIADO ANALISIS EXAMEN ADMISION")
-                elif(row[2] == "PRUEBA"):
-                    p = PruebaAnalyzer(row[4], row[8], row[0])
+                elif(row[3] == "DIAGNOSTICO"):
+                    p = PruebaAnalyzer(row[5], row[9], row[0])
                     p.start()
                     print("INICIADO ANALISIS EXAMEN ADMISION")
                 
