@@ -21,7 +21,7 @@ class Literal:
 # Parametros del seeder
 nombre_archivo_pregunta = "DataSetPreguntas.csv"
 nombre_archivo_literal = "DataSetLiterales.csv"
-numero_estudiantes = 5000
+numero_estudiantes = 500
 
 columna_id_pregunta = 0
 columna_texto_pregunta = 1
