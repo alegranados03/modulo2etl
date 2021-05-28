@@ -5,7 +5,7 @@ import queries.Institucion as Institucion
 
 
 class Municipio:
-    def __init__(self, id, nombre,departamento_id):
+    def __init__(self, id, nombre, departamento_id):
         self.id = id
         self.nombre = nombre
         self.departamento_id = departamento_id
@@ -26,10 +26,13 @@ class Municipio:
             instituciones
         WHERE
             municipio_id = :municipioId
+        
+        ORDER BY id
          """
         result = db.session.execute(queryString, data)
         self.instituciones = []
         for mun in result:
             inst = Institucion(*mun)
             self.instituciones.append(inst)
-
+        #print('Municipio: {0}'.format(self.nombre))
+        #print('cantidad de instituciones: {0}'.format(len(self.instituciones)))

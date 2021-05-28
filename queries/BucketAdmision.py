@@ -1,5 +1,8 @@
 import queries.db as db
+import queries.Deficiencia as Deficiencia
 #import db
+#from Deficiencia import *
+
 class BucketAdmision:
     def __init__(self, bucket_id,id_examen_admision,nombre, institucion_id, preguntas, preguntas_masculino, preguntas_femenino, aciertos,aciertos_masculino, aciertos_femenino, fallos, fallos_masculino, fallos_femenino):
         self.id = bucket_id
@@ -41,8 +44,10 @@ class BucketAdmision:
             INNER JOIN departamentos dep ON dep.id = ins.departamento_id
             WHERE bta.id = :btaId AND btai.institucion_id = :instId
             GROUP BY bta.id,bda.id,bdai.id
-            ORDER BY ins.id
+            ORDER BY ins.id,e.id
         """
         result = db.session.execute(queryString, data)
         for deficiencia in result:
-            self.deficiencias.append(deficiencia[1:len(deficiencia)])
+            self.deficiencias.append(Deficiencia(*deficiencia[1:len(deficiencia)]))
+        #print('Bucket: {0}'.format(self.nombre))
+        #print('cantidad de deficiencias: {0}'.format(len(self.deficiencias)))

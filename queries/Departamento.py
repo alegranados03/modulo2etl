@@ -3,6 +3,7 @@ import queries.Municipio as Municipio
 #import db
 #from Municipio import *
 
+
 class Departamento:
     def __init__(self, id, nombre):
         self.id = id
@@ -24,8 +25,8 @@ class Departamento:
         result = db.session.execute(queryString, data)
         self.municipios = []
         for mun in result:
-            m = Municipio(mun[0],mun[1],mun[2])
+            m = Municipio(mun[0], mun[1], mun[2])
             self.municipios.append(m)
+        #print('Departamento: {0}'.format(self.nombre))
+        #print('cantidad de municipios: {0}'.format(len(self.municipios)))
 
-d = Departamento(10,'San Salvador')
-d.obtenerMunicipios()
