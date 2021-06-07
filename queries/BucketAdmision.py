@@ -19,7 +19,7 @@ class BucketAdmision:
         self.fallos_masculino = fallos_masculino
         self.fallos_femenino = fallos_femenino
         self.deficiencias = []
-        self.obtenerDeficiencias()
+
 
     def obtenerDeficiencias(self):
         data=dict(btaId=self.id,instId=self.institucion_id)

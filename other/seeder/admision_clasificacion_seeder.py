@@ -73,7 +73,7 @@ mapeo_examen = [
 ]
 
 # Paso 1: Configuracion de la db
-engine = create_engine("mysql+mysqldb://root@localhost/segundaprueba")
+engine = create_engine("mysql+mysqldb://root@localhost/testdata")
 session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 session = Session()

@@ -45,7 +45,8 @@ class Institucion:
             WHERE
                 bta.id_examen_admision IN :examenIds AND btai.institucion_id = :institucionId
             GROUP BY
-                bta.id
+                bta.id,
+                btai.institucion_id
             ORDER BY 
                 bta.id
                 """
