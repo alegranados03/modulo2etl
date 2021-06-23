@@ -47,7 +47,8 @@ class BaseBucketCalculation:
             for literal in list(filter(lambda x: x.etiqueta is None, pregunta.respuestas)):
                 # Paso 5: Ya calculamos todos los literales de la pregunta que eran deficiencia
                 #         ahora procedemos a guardar el literal de pregunta que era el correcto
-                bucket.literales_correctos.append(literal.id)
+                if (literal.id not in bucket.literales_correctos):
+                    bucket.literales_correctos.append(literal.id)
         
         #self.imprimir_buckets_temas()
     
@@ -73,13 +74,15 @@ class BaseBucketCalculation:
     def crear_bucket_tema(self, pregunta):
         bucket = BucketTema()
         bucket.temas = [tema.id for tema in pregunta.temas]
+        bucket.temas_obj = pregunta.temas
         bucket.preguntas.append(pregunta.id)
 
         self.buckets_temas.append(bucket)
         return bucket
     
     def anexar_pregunta_bucket(self, bucket, pregunta):
-        bucket.preguntas.append(pregunta.id)
+        if (pregunta.id not in bucket.preguntas):
+            bucket.preguntas.append(pregunta.id)
     
     def obtener_bucket_deficiencia(self, bucket_tema, literal):
         # Paso 1: recorremos la lista para determinar si alguno de los bucket
@@ -98,11 +101,13 @@ class BaseBucketCalculation:
     def crear_bucket_deficiencia(self, bucket_tema, literal):
         bucket_deficiencia = BucketDeficiencia()
         bucket_deficiencia.deficiencia = literal.etiqueta.id
+        bucket_deficiencia.etiqueta_obj = literal.etiqueta
         bucket_deficiencia.literales.append(literal.id)
         bucket_tema.buckets_deficiencias.append(bucket_deficiencia)
     
     def anexar_literal_bucket(self, bucket_deficiencia, literal):
-        bucket_deficiencia.literales.append(literal.id)
+        if (literal.id not in bucket_deficiencia.literales):
+            bucket_deficiencia.literales.append(literal.id)
     
     '''
         DEBUGGER FUNCTIONS
