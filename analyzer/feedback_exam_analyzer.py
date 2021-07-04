@@ -32,7 +32,10 @@ class BaseFeedbackExamAnalyzer(threading.Thread, BaseBucketCalculation, Feedback
         self.fecha_fin = fecha_fin
 
         self.feedback = Feedback()
+<<<<<<< HEAD
         self.jsonData = None
+=======
+>>>>>>> 24ed7a1ea76bf94e745298bd9389f5c879aaa5ed
     
     '''
         FUNCIONES RELACIONADAS AL CALCULO DE BUCKETS
