@@ -6,6 +6,7 @@ class BucketTema():
         self.literales_correctos = []
         self.referencia_bucket_tema = None
         self.temas_obj = None
+        self.seccion = None
 
 class BucketDeficiencia():
     def __init__(self):

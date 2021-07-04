@@ -15,6 +15,7 @@ class Pregunta(db.Database):
     
     # Propiedades relationship
     seccion_id = Column(Integer, ForeignKey(db.TBL_SECCION_FK))
+    seccion = relationship("Seccion")
     respuestas = relationship("Respuesta")
 
     temas =  relationship("Tema", secondary=db.preguntas_temas)

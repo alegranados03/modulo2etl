@@ -27,19 +27,22 @@ class FeedbackProcess:
     def inicializar_proceso_feedback(self):
         self.obtener_proceso()
         self.cambiar_estado("EJECUTANDO")
-        self.calcular_examenes()
-        self.actualizar_progreso(0)
     
     def obtener_proceso(self):
-        # TODO: Obtener a traves de ORM el objeto ProcesoFeedback
-        self.proceso_feedback = None
+        print("Obteniendo proceso con ID=" +  str(self.id_proceso_feedback))
+        self.proceso_feedback = self.session.query(ProcesoFeedback).get(self.id_proceso_feedback)
     
     def cambiar_estado(self, estado):
-        # TODO: Cambiar el estado a traves de ORM
         print("CAMBIANDO ESTADO DEL PROCESO FEEDBACK")
-        """self.proceso_feedback.estado = estado
-        self.proceso_feedback.ejecutar_ahora = 1
-        self.session.commit()"""
+        self.proceso_feedback.estado = estado
+        self.session.commit()
+    
+    def almacenar_datos(self, datos):
+        print("ALMACENANDO DATOS DEL PROCESO FEEDBACK")
+        self.cambiar_estado("TERMINADO")
+        self.proceso_feedback.datos = datos
+        self.session.commit()
+        
     
     def actualizar_progreso(self, pcj = None):
         porcentaje = pcj

@@ -32,6 +32,7 @@ class BaseFeedbackExamAnalyzer(threading.Thread, BaseBucketCalculation, Feedback
         self.fecha_fin = fecha_fin
 
         self.feedback = Feedback()
+        self.jsonData = None
     
     '''
         FUNCIONES RELACIONADAS AL CALCULO DE BUCKETS
@@ -105,45 +106,70 @@ class FeedbackExamAnalyzer(BaseFeedbackExamAnalyzer):
 
         # Paso 4: Procedemos a calcular las frecuencias
         self.calcular_frecuencias_examenes_estudiante()
+
+        # Paso 5: Habiendo calculado los datos, procedemos a almacenar
+        self.almacenar_datos(self.jsonData)
     
     def calcular_frecuencias_examenes_estudiante(self):
         print("EMPEZAMOS EL CALCULO DE FRECUENCIAS")
-        self.feedback.fortalezas = []
+        self.feedback.secciones = []
 
-        # Paso 1: Previamente ya calculamos los ids de intentos
-        #         A ocupar, por lo cual procedemos a realizar los
-        #         calculos como tal
-        for bucket_tema in self.buckets_temas:
-            print("------------------------------------------------")
-            print("CALCULANDO LA FRECUENCIA PARA LOS BUCKETS:")
-            print(bucket_tema.temas)
+        # Paso 0: Obtenemos las distintas secciones que aparecen en los
+        # Buckets de temas
+        secciones = list(set([bucket.seccion.id for bucket in self.buckets_temas]))
+        
+        for seccion in secciones:
+            seccion_feedback = SeccionFeedback()
+            seccion_feedback.id_seccion = seccion
+            seccion_feedback.fortalezas = []
+            seccion_feedback.debilidades = []
 
-            # Paso 2: Calculamos las fecuencias de cada respuesta elegida
-            #         Para las preguntas que contempla el bucket
-            datos_frecuencia = self.calcular_frecuencia_literales(bucket_tema.preguntas, self.ids_intentos)
-
-            # Paso 3: Calcular bucket tema feedback
-            bucket_tema_feedback = self.crear_bucket_tema_feedback(bucket_tema, datos_frecuencia)
-            print("PARA ESTE BUCKET DE TEMAS, LA FRECUENCIA DE EXITOS ES: ")
-            print("NUMERO PREGUNTAS = " + str(bucket_tema_feedback.numero_preguntas))
-            print("EXITOS TOTALES = " + str(bucket_tema_feedback.aciertos))
-
-            # Paso 4: Iteramos los buckets de deficiencia, y empezamos a realizar el calculo
-            #         de frecuencias para las deficiencias
-            for bucket_deficiencia in bucket_tema.buckets_deficiencias:
-                bucket_deficiencia_feedback = self.crear_bucket_deficiencia_feedback(bucket_tema_feedback, bucket_deficiencia, datos_frecuencia)
-                bucket_tema_feedback.deficiencias.append(bucket_deficiencia_feedback)
+            # Paso 1: Previamente ya calculamos los ids de intentos
+            #         A ocupar, por lo cual procedemos a realizar los
+            #         calculos como tal
+            buckets_seccion = [bucket for bucket in self.buckets_temas if bucket.seccion.id == seccion]
+            try:
+                seccion_feedback.nombre_seccion = buckets_seccion[0].seccion.nombre
+            except:
+                print("No se pudo obtener el nombre de la seccion")
             
-            self.feedback.fortalezas.append(bucket_tema_feedback)
+            for bucket_tema in buckets_seccion:
+                print("------------------------------------------------")
+                print("CALCULANDO LA FRECUENCIA PARA LOS BUCKETS:")
+                print(bucket_tema.temas)
+
+                # Paso 2: Calculamos las fecuencias de cada respuesta elegida
+                #         Para las preguntas que contempla el bucket
+                datos_frecuencia = self.calcular_frecuencia_literales(bucket_tema.preguntas, self.ids_intentos)
+
+                # Paso 3: Calcular bucket tema feedback
+                bucket_tema_feedback = self.crear_bucket_tema_feedback(bucket_tema, datos_frecuencia)
+                print("PARA ESTE BUCKET DE TEMAS, LA FRECUENCIA DE EXITOS ES: ")
+                print("NUMERO PREGUNTAS = " + str(bucket_tema_feedback.numero_preguntas))
+                print("EXITOS TOTALES = " + str(bucket_tema_feedback.aciertos))
+
+                # Paso 4: Iteramos los buckets de deficiencia, y empezamos a realizar el calculo
+                #         de frecuencias para las deficiencias
+                for bucket_deficiencia in bucket_tema.buckets_deficiencias:
+                    bucket_deficiencia_feedback = self.crear_bucket_deficiencia_feedback(bucket_tema_feedback, bucket_deficiencia, datos_frecuencia)
+                    bucket_tema_feedback.deficiencias.append(bucket_deficiencia_feedback)
+                
+                seccion_feedback.fortalezas.append(bucket_tema_feedback)
+            self.feedback.secciones.append(seccion_feedback)
         
         # Paso 5: Habiendo calculado fortalezas y debilidades, reordenar en base a
         #         porcentaje de fortaleza (asc = debilidad, desc = fortaleza)
-        self.feedback.fortalezas.sort(key=lambda x: x.porcentaje_fortaleza, reverse=True)
-        self.feedback.debilidades = self.feedback.fortalezas.copy()
-        self.feedback.debilidades.sort(key=lambda x: x.porcentaje_debilidad, reverse=True)
+        for seccion in self.feedback.secciones:
+            seccion.fortalezas.sort(key=lambda x: x.porcentaje_fortaleza, reverse=True)
+            seccion.debilidades = seccion.fortalezas.copy()
+            seccion.debilidades.sort(key=lambda x: x.porcentaje_debilidad, reverse=True)
+
+        #self.feedback.fortalezas.sort(key=lambda x: x.porcentaje_fortaleza, reverse=True)
+        #self.feedback.debilidades = self.feedback.fortalezas.copy()
+        #self.feedback.debilidades.sort(key=lambda x: x.porcentaje_debilidad, reverse=True)
         
-        jsonData = json.dumps(self.feedback.__dict__, default=lambda o: o.__dict__, indent=4)
-        print(jsonData)
+        self.jsonData = json.dumps(self.feedback.__dict__, default=lambda o: o.__dict__, indent=4)
+        print(self.jsonData)
 
     
     def crear_bucket_tema_feedback(self, bucket_tema, datos_frecuencia):

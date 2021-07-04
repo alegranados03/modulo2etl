@@ -12,3 +12,4 @@ from queries.DeficienciaFeedback import *
 from queries.Feedback import *
 from queries.EtiquetaFeedback import *
 from queries.TemaFeedback import *
+from queries.SeccionFeedback import *

@@ -13,7 +13,7 @@ class BaseBucketCalculation:
             #           se esta analizando, como tambien que el tipo de pregunta
             #           sea con respuesta unica (este algoritmo no soporta respuestas multiples)
             if modo == constantes.MODO_EXAMENES_PRUEBA:
-                if pregunta.seccion_id != seccion_id:
+                if pregunta.seccion_id != seccion_id and seccion_id != -1:
                     print("Saltandose la pregunta con ID=" + str(pregunta.id))
                     print("Seccion a buscar=" + str(seccion_id))
                     print("Seccion encontrada=" + str(pregunta.seccion_id))
@@ -76,6 +76,11 @@ class BaseBucketCalculation:
         bucket.temas = [tema.id for tema in pregunta.temas]
         bucket.temas_obj = pregunta.temas
         bucket.preguntas.append(pregunta.id)
+
+        try:
+            bucket.seccion = pregunta.seccion
+        except:
+            print("Seccion no encontrada, saltandose validacion")
 
         self.buckets_temas.append(bucket)
         return bucket
