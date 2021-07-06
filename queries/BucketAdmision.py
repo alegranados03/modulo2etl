@@ -4,9 +4,10 @@ import queries.Deficiencia as Deficiencia
 #from Deficiencia import *
 
 class BucketAdmision:
-    def __init__(self, bucket_id,id_examen_admision,nombre, institucion_id, preguntas, preguntas_masculino, preguntas_femenino, aciertos,aciertos_masculino, aciertos_femenino, fallos, fallos_masculino, fallos_femenino):
+    def __init__(self, bucket_id,id_examen_admision,tema_id,nombre, institucion_id, preguntas, preguntas_masculino, preguntas_femenino, aciertos,aciertos_masculino, aciertos_femenino, fallos, fallos_masculino, fallos_femenino):
         self.id = bucket_id
         self.id_examen_admision = id_examen_admision
+        self.tema_id = tema_id
         self.nombre = nombre
         self.institucion_id = institucion_id
         self.preguntas = preguntas

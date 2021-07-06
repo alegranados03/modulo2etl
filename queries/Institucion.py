@@ -17,12 +17,13 @@ class Institucion:
         self.bucketsAdmision = []
         self.bucketsExamenesPrueba = []
 
-    def obtenerBucketsAdmision(self, examenes):
-        data = dict(examenIds=tuple(examenes), institucionId=self.id)
+    def obtenerBucketsAdmision(self, examen):
+        data = dict(examenId=examen, institucionId=self.id)
         queryString = """
              SELECT
                 bta.id,
                 bta.id_examen_admision,
+                GROUP_CONCAT(btad.tema_id) as tema_id,
                 GROUP_CONCAT(t.nombre) AS nombre_bucket,
                 btai.institucion_id,
                 btai.preguntas,
@@ -43,7 +44,7 @@ class Institucion:
             INNER JOIN temas t ON
                 t.id = btad.tema_id
             WHERE
-                bta.id_examen_admision IN :examenIds AND btai.institucion_id = :institucionId
+                bta.id_examen_admision = :examenId AND btai.institucion_id = :institucionId
             GROUP BY
                 bta.id,
                 btai.institucion_id
@@ -63,14 +64,15 @@ class Institucion:
         
     
 
-    def obtenerBucketsExamenPrueba(self, secciones, anios):
-        data = dict(seccionIds=tuple(secciones),
-                    anios=tuple(anios), institucionId=self.id)
+    def obtenerBucketsExamenPrueba(self, seccion, anio):
+        data = dict(seccionId=seccion,
+                    anio=anio, institucionId=self.id)
         queryString = """
                         SELECT
                             bte.id AS bucket_tema_exp_id,
                             bte.anio,
                             bte.seccion_id,
+                            GROUP_CONCAT(bted.tema_id) as tema_id,
                             GROUP_CONCAT(t.nombre) AS nombre_tema,
                             btei.institucion_id,
                             btei.preguntas,
@@ -97,7 +99,7 @@ class Institucion:
                         INNER JOIN departamentos dep ON
                             dep.id = ins.departamento_id
                         WHERE
-                         bte.seccion_id IN :seccionIds AND bte.anio IN :anios AND btei.institucion_id = :institucionId
+                         bte.seccion_id = :seccionId AND bte.anio = :anio AND btei.institucion_id = :institucionId
                         GROUP BY
                             bte.id,
                             btei.institucion_id

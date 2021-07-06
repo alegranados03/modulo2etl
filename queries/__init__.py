@@ -13,3 +13,7 @@ from queries.Feedback import *
 from queries.EtiquetaFeedback import *
 from queries.TemaFeedback import *
 from queries.SeccionFeedback import *
+from queries.Bucket import *
+from queries.ReporteResumen import *
+from queries.FilaReporte import *
+from queries.Reporte import *

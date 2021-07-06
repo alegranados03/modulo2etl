@@ -61,32 +61,36 @@ class CommonQueryExecutor:
 
 class ExamenAdmisionQueryExecutor:
 
-    def bucketsAdmisionPorInstitucion(examenesAdmision, instituciones):
+    def bucketsAdmisionPorInstitucion(examenAdmision, instituciones):
         institucionesList = CommonQueryExecutor.getInstituciones(instituciones)
         for inst in institucionesList:
-            inst.obtenerBucketsAdmision(examenesAdmision)
+            inst.obtenerBucketsAdmision(examenAdmision)
         return institucionesList
 
-    def bucketsAdmisionPorMunicipio(examenesAdmision, municipios):
+    def bucketsAdmisionPorMunicipio(examenAdmision, municipios):
         municipiosList = CommonQueryExecutor.getMunicipios(municipios)
+        instituciones = []
         for mun in municipiosList:
             mun.obtenerInstituciones()
             for inst in mun.instituciones:
-                inst.obtenerBucketsAdmision(examenesAdmision)
-        return municipiosList
+                inst.obtenerBucketsAdmision(examenAdmision)
+                instituciones.append(inst)
+        return instituciones
 
-    def bucketsAdmisionPorDepartamento(examenesAdmision, departamentos):
+    def bucketsAdmisionPorDepartamento(examenAdmision, departamentos):
         departamentosList = CommonQueryExecutor.getDepartamentos(departamentos)
+        instituciones=[]
         for dep in departamentosList:
             dep.obtenerMunicipios()
             for mun in dep.municipios:
                 mun.obtenerInstituciones()
                 for ins in mun.instituciones:
-                    ins.obtenerBucketsAdmision(examenesAdmision)
+                    ins.obtenerBucketsAdmision(examenAdmision)
+                    instituciones.append(ins)
 
-        return departamentosList
+        return instituciones
 
-    def bucketsAdmisionPais(examenesAdmision):
+    def bucketsAdmisionPais(examenAdmision):
         departamentosString = """
             SELECT
                 id
@@ -99,39 +103,44 @@ class ExamenAdmisionQueryExecutor:
         departamentos = [r[0] for r in result]
         pais = Pais()
         pais.departamentos = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(
-            examenesAdmision, departamentos)
+            examenAdmision, departamentos)
 
         return pais
 
 
 class ExamenPruebaQueryExecutor:
 
-    def bucketsPruebaPorInstitucion(instituciones, secciones, anios):
+    def bucketsPruebaPorInstitucion(instituciones, seccion, anio):
         institucionesList = CommonQueryExecutor.getInstituciones(instituciones)
         for inst in institucionesList:
-            inst.obtenerBucketsExamenPrueba(secciones, anios)
+            inst.obtenerBucketsExamenPrueba(seccion, anio)
         return institucionesList
 
-    def bucketsPruebaPorMunicipio(municipios, secciones, anios):
+    def bucketsPruebaPorMunicipio(municipios, seccion, anio):
         municipiosList = CommonQueryExecutor.getMunicipios(municipios)
+        instituciones=[]
         for mun in municipiosList:
             mun.obtenerInstituciones()
             for inst in mun.instituciones:
-                inst.obtenerBucketsExamenPrueba(secciones, anios)
-        return municipiosList
+                inst.obtenerBucketsExamenPrueba(seccion, anio)
+                instituciones.append(inst)
+        return instituciones
 
-    def bucketsPruebaPorDepartamento(departamentos, secciones, anios):
+    def bucketsPruebaPorDepartamento(departamentos, seccion, anio):
         departamentosList = CommonQueryExecutor.getDepartamentos(departamentos)
+        instituciones = []
         for dep in departamentosList:
             dep.obtenerMunicipios()
             for mun in dep.municipios:
                 mun.obtenerInstituciones()
                 for ins in mun.instituciones:
-                    ins.obtenerBucketsExamenPrueba(secciones, anios)
+                    ins.obtenerBucketsExamenPrueba(seccion, anio)
+                    instituciones.append(ins)
 
-        return departamentosList
 
-    def bucketsPruebaPais(secciones, anios):
+        return instituciones
+
+    def bucketsPruebaPais(seccion, anio):
         departamentosString = """
             SELECT
                 id
@@ -144,6 +153,6 @@ class ExamenPruebaQueryExecutor:
         departamentos = [r[0] for r in result]
         pais = Pais()
         pais.departamentos = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(
-            departamentos, secciones, anios)
+            departamentos, seccion, anio)
 
         return pais
