@@ -1,7 +1,6 @@
 class ReporteResumen:
     def __init__(self, filasReporte, detalles=False):
         self.filas = filasReporte
-        print(self.filas)
         self.detalles = detalles
         self.filasResumen = {}
 

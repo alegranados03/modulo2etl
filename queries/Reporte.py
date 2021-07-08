@@ -39,13 +39,12 @@ class Reporte:
             for bucket in bucketsInstitucion:
                 fila = self.filas[bucket.id]
                 fila.agregarDatosGeneral(bucket)
-                # agregar datos a fila, falta funcion en la clase
                 if self.detalles == True:
                     fila.agregarOModificarDetalle(bucket)
 
     def calcularTotales(self):
         for fila in self.filas.values():
-            print("total: {0}, fallos: {1}, aciertos: {2}".format(fila.general['Npreguntas'],fila.fallos['Npreguntas'],fila.aciertos['Npreguntas']))
+            #print("total: {0}, fallos: {1}, aciertos: {2}".format(fila.general['Npreguntas'],fila.fallos['Npreguntas'],fila.aciertos['Npreguntas']))
             self.totales['total_preguntas'] = self.totales['total_preguntas'] + fila.general['Npreguntas']
             self.totales['total_preguntas_masculino'] = self.totales['total_preguntas_masculino'] + fila.general['M']
             self.totales['total_preguntas_femenino'] = self.totales['total_preguntas_femenino'] + fila.general['F']
@@ -61,7 +60,10 @@ class Reporte:
         self.resumen.construirResumen()
 
     def ejecutarProcesamiento(self):
+        self.prepararFilas()
         self.procesarDatos()
+        self.generarResumen()
+        self.calcularTotales()
 
     def removerDataEnBruto(self):
         self.instituciones = None

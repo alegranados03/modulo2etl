@@ -54,7 +54,7 @@ class Institucion:
         result = db.session.execute(queryString, data)
         self.buckets = []
         
-        print('Institucion: {0} id:{1}'.format(self.nombre,self.id))
+        #print('Institucion: {0} id:{1}'.format(self.nombre,self.id))
         for tup in result:
             b = BucketAdmision(*tup)
             self.bucketsAdmision.append(b)
