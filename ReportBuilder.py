@@ -63,19 +63,33 @@ class ReportBuilder:
 
         return buckets
 
-    def reporteDebilidadesYFortalezasTema(instituciones,examenId):
+    def reporteDebilidadesYFortalezasTema(filtro,ids,examenId):
+        if filtro == 'DEPARTAMENTO':
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+        elif filtro == 'MUNICIPIO':
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
+        elif filtro == 'INSTITUCION':
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+        
         buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades y fortalezas por tema',instituciones,buckets,'ADMISION')
         reporte.ejecutarProcesamiento()
         return reporte
 
-    def reporteDetalleDebilidades(instituciones,examenId):
+    def reporteDetalleDebilidades(filtro,ids,examenId):
+        if filtro == 'DEPARTAMENTO':
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+        elif filtro == 'MUNICIPIO':
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
+        elif filtro == 'INSTITUCION':
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+
         buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades',instituciones,buckets,'ADMISION',True)
         reporte.ejecutarProcesamiento()
         return reporte
 
-    def reporteDebilidadesAmbasRondas(instituciones,anio,seccion):
+    def reporteDebilidadesAmbasRondas(filtro,ids,anio,seccion):
         data = dict(seccion=seccion, anio=anio)
         result = db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion;',data)
         examenes = []
@@ -85,10 +99,19 @@ class ReportBuilder:
         examenes.append([6,2])#remover o comentar esta linea luego
         reportes = []
         bucketsList = []
+        #creacion de reportes de ambas rondas
         for examen in examenes:
             id,fase = examen[0],examen[1]
             buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':id})
             bucketsList.append(buckets)
+
+            if filtro == 'DEPARTAMENTO':
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+            elif filtro == 'MUNICIPIO':
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
+            elif filtro == 'INSTITUCION':
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+
             reporte = Reporte('Reporte examen de admisión del año {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
             reporte.ejecutarProcesamiento()
             reportes.append(reporte)
@@ -100,16 +123,76 @@ class ReportBuilder:
         reporteComparativo = ReporteComparativo("reporte comparativo")
         reporteComparativo.inicializarComparadores(buckets1,buckets2)
         reporteComparativo.procesarDatos(reporte1,reporte2)
-        for pair in reporteComparativo.bucketsComparadores.items():
-           print(pair)
-    def reporteRendimientoGlobal(instituciones):
-        pass
+        
+        return {
+            'reporte_examen_admision_1':reporte1,
+            'reporte_examen_admision_2':reporte2,
+            'reporte_comparativo': reporteComparativo
+        }
 
-instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(6,[1,2,3,4,5,6,7,8,9,10,11,12,13,14])
-#reporte = ReportBuilder.reporteDebilidadesYFortalezasTema(instituciones)
-#reporte = ReportBuilder.reporteDetalleDebilidades(instituciones,6)
-#print("total: {0}, total_fallos:{1}, total_aciertos: {2}".format(reporte.totales['total_preguntas'],reporte.totales['total_fallos'],reporte.totales['total_aciertos']))
-#for fila in reporte.filas.values():
-#    print(fila.deficiencias)
 
-reporte = ReportBuilder.reporteDebilidadesAmbasRondas(instituciones,2021,1)
+    def reporteRendimientoGlobal(filtro,ids,anio,seccion):
+        data = dict(seccion=seccion, anio=anio)
+        result = db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion;',data)
+        examenes = []
+        for examen in result:
+            examenes.append([examen[0],examen[1]])
+        
+        examenes.append([6,2])#remover o comentar esta linea luego
+        reportes = []
+        bucketsList = []
+        #creacion de reportes de ambas rondas
+        for examen in examenes:
+            id,fase = examen[0],examen[1]
+            buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':id})
+            bucketsList.append(buckets)
+            if filtro == 'DEPARTAMENTO':
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+            elif filtro == 'MUNICIPIO':
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
+            elif filtro == 'INSTITUCION':
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+
+            reporte = Reporte('Reporte EXAMEN DE ADMISION {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
+            reporte.ejecutarProcesamiento()
+            reportes.append(reporte)
+        
+
+        buckets1, buckets2 = bucketsList[0], bucketsList[1]
+        reporte1, reporte2 = reportes[0],reportes[1]
+        
+        #reporte examenes de prueba
+        bucketsprueba = ReportBuilder.obtenerBuckets('EXAMEN_PRUEBA',{'anio':anio,'seccion':seccion})
+        if filtro == 'DEPARTAMENTO':
+            instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
+        elif filtro == 'MUNICIPIO':
+            instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorMunicipio(ids,seccion, anio)
+        elif filtro == 'INSTITUCION':
+            instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
+
+        reporteExamenPrueba = Reporte('Reporte examenes de prueba del año {0}'.format(anio),instituciones,bucketsprueba,'EXAMEN_PRUEBA',True)
+        reporteExamenPrueba.ejecutarProcesamiento()
+
+        
+        #comparacion entre rondas
+        reporteComparativoRonda1 = ReporteComparativo("Reporte comparativo entre examen de primera ronda y examenes de prueba")
+        reporteComparativoRonda1.inicializarComparadores(buckets1,bucketsprueba)
+        reporteComparativoRonda1.procesarDatos(reporte1,reporteExamenPrueba)
+
+
+        reporteComparativoRonda2 = ReporteComparativo("Reporte comparativo entre examen de segunda ronda y examenes de prueba")
+        reporteComparativoRonda2.inicializarComparadores(buckets2,bucketsprueba)
+        reporteComparativoRonda2.procesarDatos(reporte2,reporteExamenPrueba)
+        
+        
+        return {
+            'reporte_primera_ronda':reporte1,
+            'reporte_segunda_ronda':reporte2,
+            'reporte_examenes_prueba':reporteExamenPrueba,
+            'comparativo_exp_primera_ronda': reporteComparativoRonda1,
+            'comparativo_exp_segunda_ronda': reporteComparativoRonda2
+        }
+
+
+
+#reporte = ReportBuilder.reporteRendimientoGlobal('DEPARTAMENTO',[1,2,3,4,5,6,7,8,9,10,11,12,13,14],2021,1)

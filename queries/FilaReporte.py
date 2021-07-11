@@ -8,7 +8,7 @@ class FilaReporte:
         self.aciertos = {'Npreguntas': 0, 'M': 0, 'F': 0}
         self.deficiencias = {}
 
-    def agregarDatosGeneral(self, bucket):    
+    def agregarDatosGeneral(self, bucket): 
         self.general['Npreguntas'] = self.general['Npreguntas'] + bucket.preguntas
         self.general['M'] = self.general['M'] + bucket.preguntas_masculino
         self.general['F'] = self.general['F'] + bucket.preguntas_femenino
