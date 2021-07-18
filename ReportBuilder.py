@@ -131,17 +131,16 @@ class ReportBuilder:
         }
 
 
-    def reporteRendimientoGlobal(filtro,ids,anio,seccion):
-        data = dict(seccion=seccion, anio=anio)
-        result = db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion;',data)
+    def reporteRendimientoGlobal(filtro,ids,anio,seccion,fase):
+        data = dict(seccion=seccion, anio=anio,fase=fase)
+        result = db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion AND fase=:fase;',data)
         examenes = []
         for examen in result:
             examenes.append([examen[0],examen[1]])
         
-        examenes.append([6,2])#remover o comentar esta linea luego
         reportes = []
         bucketsList = []
-        #creacion de reportes de ambas rondas
+        #creacion de reportes de ronda de examen de admision
         for examen in examenes:
             id,fase = examen[0],examen[1]
             buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':id})
@@ -153,13 +152,13 @@ class ReportBuilder:
             elif filtro == 'INSTITUCION':
                 instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
 
-            reporte = Reporte('Reporte EXAMEN DE ADMISION {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
+            reporte = Reporte('Reporte Examen de Admisión {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
             reporte.ejecutarProcesamiento()
             reportes.append(reporte)
         
 
-        buckets1, buckets2 = bucketsList[0], bucketsList[1]
-        reporte1, reporte2 = reportes[0],reportes[1]
+        buckets1 = bucketsList[0]
+        reporte1 = reportes[0]
         
         #reporte examenes de prueba
         bucketsprueba = ReportBuilder.obtenerBuckets('EXAMEN_PRUEBA',{'anio':anio,'seccion':seccion})
@@ -174,25 +173,18 @@ class ReportBuilder:
         reporteExamenPrueba.ejecutarProcesamiento()
 
         
-        #comparacion entre rondas
-        reporteComparativoRonda1 = ReporteComparativo("Reporte comparativo entre examen de primera ronda y examenes de prueba")
-        reporteComparativoRonda1.inicializarComparadores(buckets1,bucketsprueba)
-        reporteComparativoRonda1.procesarDatos(reporte1,reporteExamenPrueba)
+        #comparacion entre ronda y examen de admisin
+        reporteComparativoRonda = ReporteComparativo("Reporte comparativo entre examen de primera ronda y examenes de prueba")
+        reporteComparativoRonda.inicializarComparadores(buckets1,bucketsprueba)
+        reporteComparativoRonda.procesarDatos(reporte1,reporteExamenPrueba)
 
-
-        reporteComparativoRonda2 = ReporteComparativo("Reporte comparativo entre examen de segunda ronda y examenes de prueba")
-        reporteComparativoRonda2.inicializarComparadores(buckets2,bucketsprueba)
-        reporteComparativoRonda2.procesarDatos(reporte2,reporteExamenPrueba)
-        
-        
+                
         return {
-            'reporte_primera_ronda':reporte1,
-            'reporte_segunda_ronda':reporte2,
+            'reporte_ronda':reporte1,
             'reporte_examenes_prueba':reporteExamenPrueba,
-            'comparativo_exp_primera_ronda': reporteComparativoRonda1,
-            'comparativo_exp_segunda_ronda': reporteComparativoRonda2
+            'comparativo_exp_ronda': reporteComparativoRonda,
         }
 
 
 
-#reporte = ReportBuilder.reporteRendimientoGlobal('DEPARTAMENTO',[1,2,3,4,5,6,7,8,9,10,11,12,13,14],2021,1)
+#reporte = ReportBuilder.reporteRendimientoGlobal('DEPARTAMENTO',[1,2,3,4,5,6,7,8,9,10,11,12,13,14],2021,1,1)
