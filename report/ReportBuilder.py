@@ -69,7 +69,7 @@ class ReportBuilder:
         elif filtro == 'MUNICIPIO':
             instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
         elif filtro == 'INSTITUCION':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
         
         buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades y fortalezas por tema',instituciones,buckets,'ADMISION')
@@ -82,7 +82,7 @@ class ReportBuilder:
         elif filtro == 'MUNICIPIO':
             instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
         elif filtro == 'INSTITUCION':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
 
         buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades',instituciones,buckets,'ADMISION',True)
@@ -110,7 +110,7 @@ class ReportBuilder:
             elif filtro == 'MUNICIPIO':
                 instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
             elif filtro == 'INSTITUCION':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
 
             reporte = Reporte('Reporte examen de admisión del año {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
             reporte.ejecutarProcesamiento()
@@ -150,7 +150,7 @@ class ReportBuilder:
             elif filtro == 'MUNICIPIO':
                 instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
             elif filtro == 'INSTITUCION':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
 
             reporte = Reporte('Reporte Examen de Admisión {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
             reporte.ejecutarProcesamiento()
@@ -167,7 +167,7 @@ class ReportBuilder:
         elif filtro == 'MUNICIPIO':
             instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorMunicipio(ids,seccion, anio)
         elif filtro == 'INSTITUCION':
-            instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
+            instituciones = ExamenPruebaQueryExecutor.bucketsAdmisionPorInstitucion(ids,seccion, anio)
 
         reporteExamenPrueba = Reporte('Reporte examenes de prueba del año {0}'.format(anio),instituciones,bucketsprueba,'EXAMEN_PRUEBA',True)
         reporteExamenPrueba.ejecutarProcesamiento()
@@ -184,7 +184,3 @@ class ReportBuilder:
             'reporte_examenes_prueba':reporteExamenPrueba,
             'comparativo_exp_ronda': reporteComparativoRonda,
         }
-
-
-
-#reporte = ReportBuilder.reporteRendimientoGlobal('DEPARTAMENTO',[1,2,3,4,5,6,7,8,9,10,11,12,13,14],2021,1,1)

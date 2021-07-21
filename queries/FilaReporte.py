@@ -7,6 +7,8 @@ class FilaReporte:
         self.fallos = {'Npreguntas': 0, 'M': 0, 'F': 0}
         self.aciertos = {'Npreguntas': 0, 'M': 0, 'F': 0}
         self.deficiencias = {}
+        self.porcentaje_fallo = 0.0
+        self.porcentaje_acierto = 0.0
 
     def agregarDatosGeneral(self, bucket): 
         self.general['Npreguntas'] = self.general['Npreguntas'] + bucket.preguntas
@@ -18,6 +20,10 @@ class FilaReporte:
         self.aciertos['Npreguntas'] = self.aciertos['Npreguntas'] + bucket.aciertos
         self.aciertos['M'] = self.aciertos['M'] + bucket.aciertos_masculino
         self.aciertos['F'] = self.aciertos['F'] + bucket.aciertos_femenino
+
+        # Calculando porcentajes de fallo y acierto
+        self.porcentaje_fallo = (self.fallos['Npreguntas'] / self.general['Npreguntas'])*100.0
+        self.porcentaje_acierto = (self.aciertos['Npreguntas'] / self.general['Npreguntas'])*100.0
 
     def agregarOModificarDetalle(self, bucket):
         for deficiencia in bucket.deficiencias:
