@@ -1,9 +1,15 @@
 from queries import *
 from queries import QueryExecutor
-from queries.QueryExecutor import ExamenAdmisionQueryExecutor, ExamenPruebaQueryExecutor
-import json
+from queries.QueryExecutor import ExamenAdmisionQueryExecutor, ExamenPruebaQueryExecutor, CommonQueryExecutor
+
 class ReportBuilder:
-    def obtenerBuckets(tipo, condiciones):
+    def __init__(self,db):
+        self.db = db
+        self.examenAdmisionQueryExecutor = ExamenAdmisionQueryExecutor(db)
+        self.examenPruebaQueryExecutor = ExamenPruebaQueryExecutor(db)
+        self.commonQueryExecutor = CommonQueryExecutor(db)
+
+    def obtenerBuckets(self,tipo, condiciones):
         buckets = []
         if tipo == 'ADMISION':
             data = dict(examenId=condiciones['examenId'])
@@ -27,7 +33,7 @@ class ReportBuilder:
             ORDER BY
                 bta.id;
             """
-            result = db.session.execute(bucketString, data)
+            result = self.db.session.execute(bucketString, data)
             for tup in result:
                 b = Bucket(*tup)
                 buckets.append(b)
@@ -54,7 +60,7 @@ class ReportBuilder:
             ORDER BY
                 bte.id;
             """
-            result = db.session.execute(bucketString, data)
+            result = self.db.session.execute(bucketString, data)
             for tup in result:
                 b = Bucket(*tup)
                 buckets.append(b)
@@ -63,40 +69,58 @@ class ReportBuilder:
 
         return buckets
 
-    def reporteDebilidadesYFortalezasTema(filtro,ids,examenId):
+    def reporteDebilidadesYFortalezasTema(self,filtro,ids,examenId):
         if filtro == 'DEPARTAMENTO':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+            instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+            departamentos = self.commonQueryExecutor.getDepartamentos(ids)
+            nombre = departamentos[0].nombre
         elif filtro == 'MUNICIPIO':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
+            instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
+            municipios = self.commonQueryExecutor.getMunicipios(ids)
+            nombre = municipios[0].nombre
         elif filtro == 'INSTITUCION':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
+            instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
+
         
         buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades y fortalezas por tema',instituciones,buckets,'ADMISION')
+        try:
+            reporte.nombreLugar = nombre
+        except:
+            pass
         reporte.ejecutarProcesamiento()
         return reporte
 
-    def reporteDetalleDebilidades(filtro,ids,examenId):
+    def reporteDetalleDebilidades(self,filtro,ids,examenId):
         if filtro == 'DEPARTAMENTO':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+            instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(examenId,ids)
+            departamentos = self.commonQueryExecutor.getDepartamentos(ids)
+            nombre = departamentos[0].nombre
         elif filtro == 'MUNICIPIO':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
+            instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(examenId,ids)
+            municipios = self.commonQueryExecutor.getMunicipios(ids)
+            nombre = municipios[0].nombre
         elif filtro == 'INSTITUCION':
-            instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
+            instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
+
 
         buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades',instituciones,buckets,'ADMISION',True)
+        try:
+            reporte.nombreLugar = nombre
+        except:
+            pass
         reporte.ejecutarProcesamiento()
         return reporte
 
-    def reporteDebilidadesAmbasRondas(filtro,ids,anio,seccion):
+    def reporteDebilidadesAmbasRondas(self,filtro,ids,anio,seccion):
         data = dict(seccion=seccion, anio=anio)
-        result = db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion;',data)
+        result = self.db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion;',data)
         examenes = []
         for examen in result:
             examenes.append([examen[0],examen[1]])
         
-        examenes.append([6,2])#remover o comentar esta linea luego
+        #examenes.append([6,2])#remover o comentar esta linea luego
         reportes = []
         bucketsList = []
         #creacion de reportes de ambas rondas
@@ -106,11 +130,15 @@ class ReportBuilder:
             bucketsList.append(buckets)
 
             if filtro == 'DEPARTAMENTO':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+                instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+                departamentos = self.commonQueryExecutor.getDepartamentos(ids)
+                nombre = departamentos[0].nombre
             elif filtro == 'MUNICIPIO':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
+                instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
+                municipios = self.commonQueryExecutor.getMunicipios(ids)
+                nombre = municipios[0].nombre
             elif filtro == 'INSTITUCION':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
+                instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
 
             reporte = Reporte('Reporte examen de admisión del año {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
             reporte.ejecutarProcesamiento()
@@ -131,9 +159,9 @@ class ReportBuilder:
         }
 
 
-    def reporteRendimientoGlobal(filtro,ids,anio,seccion,fase):
+    def reporteRendimientoGlobal(self,filtro,ids,anio,seccion,fase):
         data = dict(seccion=seccion, anio=anio,fase=fase)
-        result = db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion AND fase=:fase;',data)
+        result = self.db.session.execute('SELECT id,fase FROM examen_admision WHERE anio = :anio AND id_area_conocimiento = :seccion AND fase=:fase;',data)
         examenes = []
         for examen in result:
             examenes.append([examen[0],examen[1]])
@@ -146,13 +174,21 @@ class ReportBuilder:
             buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':id})
             bucketsList.append(buckets)
             if filtro == 'DEPARTAMENTO':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+                instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)
+                departamentos = self.commonQueryExecutor.getDepartamentos(ids)
+                nombre = departamentos[0].nombre
             elif filtro == 'MUNICIPIO':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
+                instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorMunicipio(id,ids)
+                municipios = self.commonQueryExecutor.getMunicipios(ids)
+                nombre = municipios[0].nombre
             elif filtro == 'INSTITUCION':
-                instituciones = ExamenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
+                instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
 
             reporte = Reporte('Reporte Examen de Admisión {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
+            try:
+                reporte.nombreLugar = nombre
+            except:
+                pass
             reporte.ejecutarProcesamiento()
             reportes.append(reporte)
         
@@ -164,12 +200,21 @@ class ReportBuilder:
         bucketsprueba = ReportBuilder.obtenerBuckets('EXAMEN_PRUEBA',{'anio':anio,'seccion':seccion})
         if filtro == 'DEPARTAMENTO':
             instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
+            departamentos = self.commonQueryExecutor.getDepartamentos(ids)
+            nombre = departamentos[0].nombre
         elif filtro == 'MUNICIPIO':
             instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorMunicipio(ids,seccion, anio)
+            municipios = self.commonQueryExecutor.getMunicipios(ids)
+            nombre = municipios[0].nombre
         elif filtro == 'INSTITUCION':
             instituciones = ExamenPruebaQueryExecutor.bucketsAdmisionPorInstitucion(ids,seccion, anio)
 
         reporteExamenPrueba = Reporte('Reporte examenes de prueba del año {0}'.format(anio),instituciones,bucketsprueba,'EXAMEN_PRUEBA',True)
+        try:
+            reporteExamenPrueba.nombreLugar = nombre
+        except:
+            pass
+
         reporteExamenPrueba.ejecutarProcesamiento()
 
         

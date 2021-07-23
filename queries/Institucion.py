@@ -6,7 +6,7 @@ import queries.BucketExamenPrueba as BucketExamenPrueba
 #import db
 
 class Institucion:
-    def __init__(self, id, nombre, longitud, latitud, tipo_institucion, departamento_id, municipio_id):
+    def __init__(self, id, nombre, longitud, latitud, tipo_institucion, departamento_id, municipio_id,db):
         self.id = id
         self.nombre = nombre
         self.longitud = longitud
@@ -16,6 +16,7 @@ class Institucion:
         self.municipio_id = municipio_id
         self.bucketsAdmision = []
         self.bucketsExamenesPrueba = []
+        self.db = db
 
     def obtenerBucketsAdmision(self, examen):
         data = dict(examenId=examen, institucionId=self.id)
@@ -51,7 +52,7 @@ class Institucion:
             ORDER BY 
                 bta.id
                 """
-        result = db.session.execute(queryString, data)
+        result = self.db.session.execute(queryString, data)
         self.buckets = []
         
         #print('Institucion: {0} id:{1}'.format(self.nombre,self.id))
@@ -107,7 +108,7 @@ class Institucion:
                             bte.id ASC,
                             btei.institucion_id ASC
                 """
-        result = db.session.execute(queryString, data)
+        result = self.db.session.execute(queryString, data)
         for tup in result:
             b = BucketExamenPrueba(*tup)
             self.bucketsExamenesPrueba.append(b)

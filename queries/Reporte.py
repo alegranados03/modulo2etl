@@ -6,6 +6,7 @@ class Reporte:
     def __init__(self, titulo, instituciones, buckets, tipo, detalles=False):
         self.titulo = titulo
         self.instituciones = instituciones
+        self.nombreLugar = []
         self.tipo = tipo
         self.detalles = detalles
         self.buckets = buckets
@@ -20,6 +21,7 @@ class Reporte:
                         'total_aciertos': 0,
                         'total_aciertos_masculino': 0,
                         'total_aciertos_femenino': 0}
+
 
     def prepararFilas(self):
         for bucket in self.buckets:

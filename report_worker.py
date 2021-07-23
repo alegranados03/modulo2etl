@@ -4,9 +4,9 @@ from report import *
 # activo)
 
 TIPO_REPORTE = 'DEBILIDAD_FORTALEZA_TEMA'
-TIPO_BUSQUEDA = 'INSTITUCION'
+TIPO_BUSQUEDA = 'DEPARTAMENTO'
 VALORES_BUSQUEDA = [1, 2, 3, 4, 5]
-ID_EXAMEN_ADMISION = 2
+ID_EXAMEN_ADMISION = 6
 
 # Paso 1: Popular reporte
 rp = ReportPopulator()
