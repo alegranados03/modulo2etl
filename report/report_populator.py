@@ -16,6 +16,8 @@ TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA = "TABLA_RESUMEN_COMPARACION_ADMISION_
 class ReportPopulator:
     def __init__(self):
         print('Hola Mundo')
+        self.db = ReportBuilderConnection()
+        self.report_builder = ReportBuilder(self.db)
     
     def llenar_reporte(self, tipo_reporte, tipo_busqueda, valores_busqueda, id_examen):
         if tipo_reporte == TIPO_DEBILIDAD_FORTALEZA_TEMA:
@@ -31,8 +33,15 @@ class ReportPopulator:
 
         # Paso 2: Crear reporte en memoria (resultados) para cada una de los valores de busqueda
         for valor in valores_busqueda:
-            query = ReportBuilder.reporteDebilidadesYFortalezasTema(tipo_busqueda, [valor], id_examen)
-            pdf.agregar_seccion(seccion_prefix + query.instituciones[0].nombre)
+            query = self.report_builder.reporteDebilidadesYFortalezasTema(tipo_busqueda, [valor], id_examen)
+            titulo = 'Test'
+
+            if (tipo_busqueda == TIPO_BUSQUEDA_INSTITUCION):
+                titulo = query.instituciones[0].nombre
+            else:
+                titulo = query.nombreLugar
+
+            pdf.agregar_seccion(seccion_prefix + titulo)
 
             # Paso 2.1 Crear listas ordenadas en base a aciertos y en base a fallos
             temas_ordenado_acierto = sorted(list(query.filas.values()), key = lambda fila: fila.porcentaje_acierto, reverse=True)

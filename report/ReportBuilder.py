@@ -82,7 +82,7 @@ class ReportBuilder:
             instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
 
         
-        buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
+        buckets = self.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades y fortalezas por tema',instituciones,buckets,'ADMISION')
         try:
             reporte.nombreLugar = nombre
@@ -104,7 +104,7 @@ class ReportBuilder:
             instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(examenId,ids)
 
 
-        buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':examenId})
+        buckets = self.obtenerBuckets('ADMISION',{'examenId':examenId})
         reporte = Reporte('Reporte de debilidades',instituciones,buckets,'ADMISION',True)
         try:
             reporte.nombreLugar = nombre
@@ -197,7 +197,7 @@ class ReportBuilder:
         reporte1 = reportes[0]
         
         #reporte examenes de prueba
-        bucketsprueba = ReportBuilder.obtenerBuckets('EXAMEN_PRUEBA',{'anio':anio,'seccion':seccion})
+        bucketsprueba = self.obtenerBuckets('EXAMEN_PRUEBA',{'anio':anio,'seccion':seccion})
         if filtro == 'DEPARTAMENTO':
             instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
             departamentos = self.commonQueryExecutor.getDepartamentos(ids)

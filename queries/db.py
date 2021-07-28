@@ -7,3 +7,13 @@ engine = create_engine("mysql+mysqldb://root@localhost/testdata")
 session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 session = Session()
+
+
+class ReportBuilderConnection():
+    def __init__(self):
+        # Crear objetos iniciales
+        print('Ocupando prueba rapida')
+        self.engine = create_engine("mysql+mysqldb://root@localhost/pruebarapida")
+        self.session_factory = sessionmaker(bind=self.engine)
+        self.Session = scoped_session(self.session_factory)
+        self.session = self.Session()

@@ -4,7 +4,7 @@ import queries.Deficiencia as Deficiencia
 #from Deficiencia import *
 
 class BucketAdmision:
-    def __init__(self, bucket_id,id_examen_admision,tema_id,nombre, institucion_id, preguntas, preguntas_masculino, preguntas_femenino, aciertos,aciertos_masculino, aciertos_femenino, fallos, fallos_masculino, fallos_femenino):
+    def __init__(self, bucket_id,id_examen_admision,tema_id,nombre, institucion_id, preguntas, preguntas_masculino, preguntas_femenino, aciertos,aciertos_masculino, aciertos_femenino, fallos, fallos_masculino, fallos_femenino, db):
         self.id = bucket_id
         self.id_examen_admision = id_examen_admision
         self.tema_id = tema_id
@@ -20,6 +20,7 @@ class BucketAdmision:
         self.fallos_masculino = fallos_masculino
         self.fallos_femenino = fallos_femenino
         self.deficiencias = []
+        self.db = db
 
 
     def obtenerDeficiencias(self):
@@ -47,7 +48,7 @@ class BucketAdmision:
             GROUP BY bta.id,bda.id,bdai.id
             ORDER BY ins.id,e.id
         """
-        result = db.session.execute(queryString, data)
+        result = self.db.session.execute(queryString, data)
         for deficiencia in result:
             self.deficiencias.append(Deficiencia(*deficiencia[1:len(deficiencia)]))
         #print('Bucket: {0}'.format(self.nombre))

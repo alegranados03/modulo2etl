@@ -21,9 +21,9 @@ class FilaReporte:
         self.aciertos['M'] = self.aciertos['M'] + bucket.aciertos_masculino
         self.aciertos['F'] = self.aciertos['F'] + bucket.aciertos_femenino
 
-        # Calculando porcentajes de fallo y acierto
-        self.porcentaje_fallo = (self.fallos['Npreguntas'] / self.general['Npreguntas'])*100.0
-        self.porcentaje_acierto = (self.aciertos['Npreguntas'] / self.general['Npreguntas'])*100.0
+        if (self.general['Npreguntas'] > 0):
+            self.porcentaje_fallo = (self.fallos['Npreguntas'] / self.general['Npreguntas'])*100.0
+            self.porcentaje_acierto = (self.aciertos['Npreguntas'] / self.general['Npreguntas'])*100.0
 
     def agregarOModificarDetalle(self, bucket):
         for deficiencia in bucket.deficiencias:

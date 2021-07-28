@@ -57,7 +57,7 @@ class Institucion:
         
         #print('Institucion: {0} id:{1}'.format(self.nombre,self.id))
         for tup in result:
-            b = BucketAdmision(*tup)
+            b = BucketAdmision(*tup, self.db)
             self.bucketsAdmision.append(b)
         
         for bucket in self.bucketsAdmision:
@@ -110,7 +110,7 @@ class Institucion:
                 """
         result = self.db.session.execute(queryString, data)
         for tup in result:
-            b = BucketExamenPrueba(*tup)
+            b = BucketExamenPrueba(*tup, self.db)
             self.bucketsExamenesPrueba.append(b)
         for bucket in self.bucketsExamenesPrueba:
               b = bucket
