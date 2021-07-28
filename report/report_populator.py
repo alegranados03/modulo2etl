@@ -1,6 +1,7 @@
 from report import *
 
 TIPO_DEBILIDAD_FORTALEZA_TEMA = 'DEBILIDAD_FORTALEZA_TEMA'
+TIPO_DEBILIDAD_DETALLE = 'DEBILIDAD_DETALLE'
 
 TIPO_BUSQUEDA_DEPARTAMENTO = 'DEPARTAMENTO'
 TIPO_BUSQUEDA_MUNICIPIO = 'MUNICIPIO'
@@ -22,7 +23,16 @@ class ReportPopulator:
     def llenar_reporte(self, tipo_reporte, tipo_busqueda, valores_busqueda, id_examen):
         if tipo_reporte == TIPO_DEBILIDAD_FORTALEZA_TEMA:
             return self.reporte_debilidades_fortalezas_tema(tipo_busqueda, valores_busqueda, id_examen)
+        elif tipo_reporte == TIPO_DEBILIDAD_DETALLE:
+            return self.reporte_debilidades_detalle(tipo_busqueda, valores_busqueda, id_examen)
     
+    """
+        FUNCIONES GENERADORAS DE REPORTE
+    """
+
+    """
+        REPORTE 1: Reporte de debilidades y fortalezas por tema
+    """
     def reporte_debilidades_fortalezas_tema(self, tipo_busqueda, valores_busqueda, id_examen):
         # Paso 1: Generar PDF basico antes de empezar populate datos
         nivel = self.calcular_nivel(tipo_busqueda)
@@ -44,16 +54,10 @@ class ReportPopulator:
             pdf.agregar_seccion(seccion_prefix + titulo)
 
             # Paso 2.1 Crear listas ordenadas en base a aciertos y en base a fallos
-            temas_ordenado_acierto = sorted(list(query.filas.values()), key = lambda fila: fila.porcentaje_acierto, reverse=True)
-            temas_ordenado_fallos = sorted(list(query.filas.values()), key = lambda fila: fila.porcentaje_fallo, reverse=True)
-
-            # Paso 2.2: Obteniendo el subset de fortalezas y debilidades
-            #           La condicion de filtrado es:
-            #           Una fortaleza se considera fotaleza si su % acierto > 50
-            #           Una debilidad se considera debilidad si su % fallo > 50
-            fortalezas = [fortaleza for fortaleza in temas_ordenado_acierto if fortaleza.porcentaje_acierto >= 50.00]
-            debilidades = [debilidad for debilidad in temas_ordenado_fallos if debilidad.porcentaje_acierto < 50.00]
-
+            fortaleza_debilidad = self.calcular_lista_fortaleza_debilidad(query.filas.values())
+            fortalezas = fortaleza_debilidad[0]
+            debilidades = fortaleza_debilidad[1]
+            
             # Paso 2.3 Procedemos a crear la seccion de fortalezas
             tabla = pdf.crear_tabla(TABLA_FORTALEZA_TEMA)
             contador = 1
@@ -106,6 +110,86 @@ class ReportPopulator:
             
 
         return pdf
+    
+    """
+        REPORTE 2: Reporte de debilidades
+    """
+    def reporte_debilidades_detalle(self, tipo_busqueda, valores_busqueda, id_examen):
+        # Paso 1: Generar PDF basico antes de empezar populate datos
+        nivel = self.calcular_nivel(tipo_busqueda)
+        seccion_prefix = self.calcular_prefix_seccion(tipo_busqueda)
+        pdf = PDF('P', 'mm', 'Letter')
+        pdf.inicializar_reporte(titulo='Reporte de debilidades detallado', nivel=nivel)
+        pdf.agregar_cabecera()
+
+        # Paso 2: Crear reporte en memoria (resultados) para cada una de los valores de busqueda
+        for valor in valores_busqueda:
+            query = self.report_builder.reporteDetalleDebilidades(tipo_busqueda, [valor], id_examen)
+            titulo = 'Test'
+
+            if (tipo_busqueda == TIPO_BUSQUEDA_INSTITUCION):
+                titulo = query.instituciones[0].nombre
+            else:
+                titulo = query.nombreLugar
+
+            pdf.agregar_seccion(seccion_prefix + titulo)
+            
+            tabla = pdf.crear_tabla(TABLA_DEFICIENCIA_TEMA)
+            temas_ordenado_fallos = sorted(list(query.filas.values()), key = lambda fila: fila.porcentaje_fallo, reverse=True)
+            contador = 1
+            for fila in temas_ordenado_fallos:
+                datos = (str(contador) + '. ' + fila.nombre, 
+                        str(fila.general['Npreguntas']), str(fila.general['M']), str(fila.general['F']),
+                        str(fila.fallos['Npreguntas']), str(fila.fallos['M']), str(fila.fallos['F']))
+                tabla.agregar_fila_datos(datos, FILA_TEMA)
+
+                # Por cada tema, imprimimos las deficiencias
+                for deficiencia in fila.deficiencias.values():
+                    datos = (deficiencia['enunciado'], '-', '-', '-',
+                            str(deficiencia['fallos']), str(deficiencia['fallos_femenino']), str(deficiencia['fallos_masculino']))
+                    tabla.agregar_fila_datos(datos, FILA_DEFICIENCIA)
+                contador += 1
+            
+            # Agregando los totales de la tabla
+            totales = ('Total', str(query.totales['total_preguntas']), str(query.totales['total_preguntas_masculino']), str(query.totales['total_preguntas_femenino']),
+                      str(query.totales['total_fallos']), str(query.totales['total_fallos_masculino']), str(query.totales['total_fallos_femenino']))
+            tabla.agregar_fila_datos(totales, FILA_TEMA, subtotales = True)
+            pdf.agregar_tabla(tabla, titulo = 'Detalle debilidades')
+
+            # Agregando el resumen de debilidades
+            tabla = pdf.crear_tabla(TABLA_RESUMEN_DEFIENCIA_DETALLE)
+            contador = 1
+            for fila in temas_ordenado_fallos:
+                datos = [str(contador) + '. ' + fila.nombre + ' (' + str(fila.porcentaje_fallo) + '%)']
+                tabla.agregar_fila_datos(datos, FILA_RESUMEN_TEMA)
+
+                for deficiencia in fila.deficiencias.values():
+                    pcj_fallo = 0.0
+
+                    if (fila.fallos['Npreguntas'] > 0):  
+                        pcj_fallo = (deficiencia['fallos'] / fila.fallos['Npreguntas'])*100.0
+                        pcj_fallo = round(pcj_fallo, 2)
+                    
+                    datos = ['      ' + deficiencia['enunciado'] + ' (' + str(pcj_fallo) + '%)']
+                    tabla.agregar_fila_datos(datos, FILA_RESUMEN_DEFICIENCIA)
+                contador += 1
+            
+            pdf.agregar_tabla(tabla)
+        return pdf
+    
+    def calcular_lista_fortaleza_debilidad(self, filas):
+        # Paso 2.1 Crear listas ordenadas en base a aciertos y en base a fallos
+        temas_ordenado_acierto = sorted(list(filas), key = lambda fila: fila.porcentaje_acierto, reverse=True)
+        temas_ordenado_fallos = sorted(list(filas), key = lambda fila: fila.porcentaje_fallo, reverse=True)
+
+        # Paso 2.2: Obteniendo el subset de fortalezas y debilidades
+        #           La condicion de filtrado es:
+        #           Una fortaleza se considera fotaleza si su % acierto > 50
+        #           Una debilidad se considera debilidad si su % fallo > 50
+        fortalezas = [fortaleza for fortaleza in temas_ordenado_acierto if fortaleza.porcentaje_acierto >= 50.00]
+        debilidades = [debilidad for debilidad in temas_ordenado_fallos if debilidad.porcentaje_acierto < 50.00]
+
+        return [fortalezas, debilidades]
     
     def calcular_nivel(self, tipo_busqueda):
         if (tipo_busqueda == TIPO_BUSQUEDA_INSTITUCION):

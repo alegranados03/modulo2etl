@@ -25,6 +25,9 @@ class FilaReporte:
             self.porcentaje_fallo = (self.fallos['Npreguntas'] / self.general['Npreguntas'])*100.0
             self.porcentaje_acierto = (self.aciertos['Npreguntas'] / self.general['Npreguntas'])*100.0
 
+            self.porcentaje_fallo = round(self.porcentaje_fallo, 2)
+            self.porcentaje_acierto = round(self.porcentaje_acierto, 2)
+
     def agregarOModificarDetalle(self, bucket):
         for deficiencia in bucket.deficiencias:
             if deficiencia.etiqueta_id in self.deficiencias.keys():
@@ -41,4 +44,5 @@ class FilaReporte:
                                     'enunciado': deficiencia.enunciado, 'fallos': deficiencia.fallos, 'fallos_femenino': deficiencia.fallos_femenino, 'fallos_masculino': deficiencia.fallos_masculino}
 
                 self.deficiencias[deficiencia.etiqueta_id] = nuevaDeficiencia
+
         
