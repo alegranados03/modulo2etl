@@ -120,13 +120,17 @@ class ReportBuilder:
         for examen in result:
             examenes.append([examen[0],examen[1]])
         
+        # trick: duplicate second element like if we had another exam
+        #examenes.append(examenes[0])
+        #print(examenes)
+        
         #examenes.append([6,2])#remover o comentar esta linea luego
         reportes = []
         bucketsList = []
         #creacion de reportes de ambas rondas
         for examen in examenes:
             id,fase = examen[0],examen[1]
-            buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':id})
+            buckets = self.obtenerBuckets('ADMISION',{'examenId':id})
             bucketsList.append(buckets)
 
             if filtro == 'DEPARTAMENTO':
