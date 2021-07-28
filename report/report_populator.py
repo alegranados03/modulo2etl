@@ -3,6 +3,7 @@ from report import *
 TIPO_DEBILIDAD_FORTALEZA_TEMA = 'DEBILIDAD_FORTALEZA_TEMA'
 TIPO_DEBILIDAD_DETALLE = 'DEBILIDAD_DETALLE'
 TIPO_COMPARACION_RONDA_1_2 = 'COMPARACION_RONDA_1_2'
+TIPO_COMPARACION_ADMISION_DIAGNOSTICO = 'COMPARACION_ADMISION_DIAGNOSTICO'
 
 TIPO_BUSQUEDA_DEPARTAMENTO = 'DEPARTAMENTO'
 TIPO_BUSQUEDA_MUNICIPIO = 'MUNICIPIO'
@@ -201,9 +202,17 @@ class ReportPopulator:
             tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_RONDA)
             tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['reporte_comparativo'].filasResultado, calcular_fortaleza = False)
             pdf.agregar_tabla(tabla, titulo='Resumen (debilidades)')
-            
-        return pdf
 
+        return pdf
+    
+    """
+        REPORTE 4
+    """
+    
+    
+    """
+        HELPER FUNCTIONS
+    """
     def procesar_tabla_fortaleza_deficiencia(self, tabla, fortaleza_deficiencia, is_fortaleza=False):
         contador = 1
         for fila in fortaleza_deficiencia:
@@ -249,23 +258,46 @@ class ReportPopulator:
         # Paso 1: Extraer de la tabla comparativa todas las filas que se consideren fortaleza
         #         o debilidad
         match_inicial = None
+        match_inicial_2 = None
         if calcular_fortaleza:
-            match_inicial = [fila for fila in resultados if fila['aciertos']['examen1'] >= 0.5]
+            match_inicial = [fila for fila in resultados 
+                if (isinstance(fila['aciertos']['examen1'], float) and fila['aciertos']['examen1'] >= 0.5) or
+                   (isinstance(fila['aciertos']['examen2'], float) and fila['aciertos']['examen2'] >= 0.5)]
         else:
-            match_inicial = [fila for fila in resultados if fila['aciertos']['examen1'] < 0.5]
+            match_inicial = [fila for fila in resultados 
+                if (isinstance(fila['aciertos']['examen1'], float) and fila['aciertos']['examen1'] < 0.5) or
+                   (isinstance(fila['aciertos']['examen2'], float) and fila['aciertos']['examen2'] < 0.5)]
         
         # En base a los matches iniciales, calcular pcj de mejora o empeora
         for match in match_inicial:
             pcj_ronda_1 = 0.0
             pcj_ronda_2 = 0.0
-            pcj_diferencia = 0.0
 
             if calcular_fortaleza:
-                pcj_ronda_1 = round(match['aciertos']['examen1']*100.0, 2)
-                pcj_ronda_2 = round(match['aciertos']['examen2']*100.0, 2)
+                pcj_ronda_1 = match['aciertos']['examen1']
+                pcj_ronda_2 = match['aciertos']['examen2']
             else:
-                pcj_ronda_1 = round(match['fallos']['examen1']*100.0, 2)
-                pcj_ronda_2 = round(match['fallos']['examen2']*100.0, 2)
+                pcj_ronda_1 = match['fallos']['examen1']
+                pcj_ronda_2 = match['fallos']['examen2']
+
+
+            calculo = self.calcular_fila_comparativa_ronda_1_2(pcj_ronda_1, pcj_ronda_2, calcular_fortaleza)
+            datos = (match['nombre'], calculo[0], calculo[1], calculo[2], calculo[3])
+            tabla.agregar_fila_datos(datos, FILA_COMPARACION)           
+
+        return tabla
+    
+    def calcular_fila_comparativa_ronda_1_2(self, pcj_ronda_1, pcj_ronda_2, calcular_fortaleza = False):
+        datos = ()
+
+        # En este escenario no hay nada que comparar, simplemente se despliega
+        if isinstance(pcj_ronda_1, str) or isinstance(pcj_ronda_2, str):
+            datos = (str(round(pcj_ronda_1*100, 2)) + '%' if isinstance(pcj_ronda_1, int) else pcj_ronda_1,
+                     str(round(pcj_ronda_2*100, 2)) + '%' if isinstance(pcj_ronda_2, int) else pcj_ronda_2,
+                     '-', '-')
+        else:
+            pcj_ronda_1 = round(pcj_ronda_1*100.0, 2)
+            pcj_ronda_2 = round(pcj_ronda_2*100.0, 2)
 
             pcj_diferencia =  pcj_ronda_2 - pcj_ronda_1
             resultado = ''
@@ -277,11 +309,10 @@ class ReportPopulator:
             else:
                 resultado = 'MANTUVO'
             
-            datos = (match['nombre'], str(pcj_ronda_1) + '%', str(pcj_ronda_2) + '%',
+            datos = (str(pcj_ronda_1) + '%', str(pcj_ronda_2) + '%',
                     str(pcj_diferencia) + '%', resultado)
-            tabla.agregar_fila_datos(datos, FILA_COMPARACION)            
-
-        return tabla
+        
+        return datos
     
     def calcular_lista_fortaleza_debilidad(self, filas):
         # Paso 2.1 Crear listas ordenadas en base a aciertos y en base a fallos
