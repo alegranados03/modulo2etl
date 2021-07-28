@@ -175,7 +175,7 @@ class ReportBuilder:
         #creacion de reportes de ronda de examen de admision
         for examen in examenes:
             id,fase = examen[0],examen[1]
-            buckets = ReportBuilder.obtenerBuckets('ADMISION',{'examenId':id})
+            buckets = self.obtenerBuckets('ADMISION',{'examenId':id})
             bucketsList.append(buckets)
             if filtro == 'DEPARTAMENTO':
                 instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorDepartamento(id,ids)

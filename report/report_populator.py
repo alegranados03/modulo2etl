@@ -22,13 +22,15 @@ class ReportPopulator:
         self.db = ReportBuilderConnection()
         self.report_builder = ReportBuilder(self.db)
     
-    def llenar_reporte(self, tipo_reporte, tipo_busqueda, valores_busqueda, id_examen, anio, seccion):
+    def llenar_reporte(self, tipo_reporte, tipo_busqueda, valores_busqueda, id_examen, anio, seccion, ronda):
         if tipo_reporte == TIPO_DEBILIDAD_FORTALEZA_TEMA:
             return self.reporte_debilidades_fortalezas_tema(tipo_busqueda, valores_busqueda, id_examen)
         elif tipo_reporte == TIPO_DEBILIDAD_DETALLE:
             return self.reporte_debilidades_detalle(tipo_busqueda, valores_busqueda, id_examen)
         elif tipo_reporte == TIPO_COMPARACION_RONDA_1_2:
             return self.reporte_comparativo_ronda_1_2(tipo_busqueda, valores_busqueda, anio, seccion)
+        elif tipo_reporte == TIPO_COMPARACION_ADMISION_DIAGNOSTICO:
+            return self.reporte_comparativo_admision_diagnostico(tipo_busqueda, valores_busqueda, anio, seccion, ronda)
     
     """
         FUNCIONES GENERADORAS DE REPORTE
@@ -74,6 +76,10 @@ class ReportPopulator:
 
             # Paso 2.3: procedemos a crear la tabla resumen
             tabla = pdf.crear_tabla(TABLA_RESUMEN_FORTALEZA_DEFICIENCIA)
+            temas_ordenado_acierto = sorted(list(query.filas.values()), key = lambda fila: fila.porcentaje_acierto, reverse=True)
+            for fila in temas_ordenado_acierto:
+                datos = (fila.nombre, str(100.0 - fila.porcentaje_acierto) + '%', str(fila.porcentaje_acierto) + '%')
+                tabla.agregar_fila_datos(datos, FILA_RESUMEN)
             pdf.agregar_tabla(tabla)
             
 
@@ -208,6 +214,27 @@ class ReportPopulator:
     """
         REPORTE 4
     """
+    def reporte_comparativo_admision_diagnostico(self, tipo_busqueda, valores_busqueda, anio, seccion, ronda):
+         # Paso 1: Generar PDF basico antes de empezar populate datos
+        nivel = self.calcular_nivel(tipo_busqueda)
+        seccion_prefix = self.calcular_prefix_seccion(tipo_busqueda)
+        pdf = PDF('P', 'mm', 'Letter')
+        pdf.inicializar_reporte(titulo='Reporte comparativo admision vs diagnóstico', nivel=nivel)
+        pdf.agregar_cabecera()
+
+        for valor in valores_busqueda:
+            # Paso 1: Obtener el reporte en memoria, y agregar el titulo de seccion
+            #         respectivo
+            query = self.report_builder.reporteRendimientoGlobal(tipo_busqueda, [valor], anio, seccion, ronda)
+            titulo = 'Test'
+
+            if (tipo_busqueda == TIPO_BUSQUEDA_INSTITUCION):
+                titulo = query['reporte_examen_admision_1'].instituciones[0].nombre
+            else:
+                titulo = query['reporte_examen_admision_1'].nombreLugar
+            pdf.agregar_seccion(seccion_prefix + titulo)
+        
+        return pdf
     
     
     """

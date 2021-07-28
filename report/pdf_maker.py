@@ -10,6 +10,8 @@ TAMANIO_COLUMNA_M_F = 1/8
 
 T_COL_FORTALEZA_DEFICIENCIA = 1/2
 T_COL_DEFICIENCIA_DETALLE = 6/10
+T_COL_RESUMEN_FD_TEMA = 3/7
+T_COL_RESUMEN_FD_FORTALEZA_DEFICIENCIA = 2/7
 T_COL_COMPARACION_TEMA = 3/8
 T_COL_COMPARACION_FASE = 1/8
 T_COL_COMPARACION_RESULTADO = 2/8
@@ -260,8 +262,8 @@ class PDF(FPDF):
             tamanios_pre_encabezado = [TAMANIO_COLUMNA_TEMA, TAMANIO_COLUMNA_N_PREG + TAMANIO_COLUMNA_M_F*2.0,
                         TAMANIO_COLUMNA_N_PREG + TAMANIO_COLUMNA_M_F*2.0]
         elif (tipo == TABLA_RESUMEN_FORTALEZA_DEFICIENCIA):
-            columnas = ["Debilidades", "Fortalezas"]
-            tamanios = [T_COL_FORTALEZA_DEFICIENCIA, T_COL_FORTALEZA_DEFICIENCIA]
+            columnas = ["Tema", "Debilidades", "Fortalezas"]
+            tamanios = [T_COL_RESUMEN_FD_TEMA, T_COL_RESUMEN_FD_FORTALEZA_DEFICIENCIA, T_COL_RESUMEN_FD_FORTALEZA_DEFICIENCIA]
         elif (tipo == TABLA_RESUMEN_DEFIENCIA_DETALLE):
             columnas = ["Debilidades (por tema y fallos comunes)"]
             tamanios = [T_COL_DEFICIENCIA_DETALLE]
