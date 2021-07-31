@@ -193,11 +193,11 @@ class ReportPopulator:
             debilidades_2 = fortaleza_debilidad_2[1]
 
             tabla = pdf.crear_tabla(TABLA_FORTALEZA_TEMA)
-            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, fortalezas, is_fortaleza = True)
+            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, fortalezas_2, is_fortaleza = True)
             pdf.agregar_tabla(tabla, titulo='Resumen fortalezas segunda fase')
 
             tabla = pdf.crear_tabla(TABLA_DEFICIENCIA_TEMA)
-            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, debilidades, is_fortaleza = False)
+            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, debilidades_2, is_fortaleza = False)
             pdf.agregar_tabla(tabla, titulo='Resumen debilidades segunda fase')
 
             # Paso 4: Calcular tablas de resumen respectivas
@@ -229,11 +229,45 @@ class ReportPopulator:
             titulo = 'Test'
 
             if (tipo_busqueda == TIPO_BUSQUEDA_INSTITUCION):
-                titulo = query['reporte_examen_admision_1'].instituciones[0].nombre
+                titulo = query['reporte_ronda'].instituciones[0].nombre
             else:
-                titulo = query['reporte_examen_admision_1'].nombreLugar
+                titulo = query['reporte_ronda'].nombreLugar
             pdf.agregar_seccion(seccion_prefix + titulo)
-        
+
+            # Paso 2: Desplegar la info de la ronda de examen de admision
+            fortaleza_debilidad = self.calcular_lista_fortaleza_debilidad(query['reporte_ronda'].filas.values())
+            fortalezas = fortaleza_debilidad[0]
+            debilidades = fortaleza_debilidad[1]
+
+            tabla = pdf.crear_tabla(TABLA_FORTALEZA_TEMA)
+            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, fortalezas, is_fortaleza = True)
+            pdf.agregar_tabla(tabla, titulo='Resumen fortalezas primera fase')
+
+            tabla = pdf.crear_tabla(TABLA_DEFICIENCIA_TEMA)
+            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, debilidades, is_fortaleza = False)
+            pdf.agregar_tabla(tabla, titulo='Resumen debilidades primera fase')
+
+            # Paso 3: Desplegar la info de reporte 2
+            fortaleza_debilidad_2 = self.calcular_lista_fortaleza_debilidad(query['reporte_examenes_prueba'].filas.values())
+            fortalezas_2 = fortaleza_debilidad_2[0]
+            debilidades_2 = fortaleza_debilidad_2[1]
+
+            tabla = pdf.crear_tabla(TABLA_FORTALEZA_TEMA)
+            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, fortalezas_2, is_fortaleza = True)
+            pdf.agregar_tabla(tabla, titulo='Resumen fortalezas exámenes diagnóstico')
+
+            tabla = pdf.crear_tabla(TABLA_DEFICIENCIA_TEMA)
+            tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, debilidades_2, is_fortaleza = False)
+            pdf.agregar_tabla(tabla, titulo='Resumen debilidades exámenes diagnóstico')
+
+            # Paso 4: Calcular tablas de resumen respectivas
+            tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_RONDA)
+            tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['comparativo_exp_ronda'].filasResultado, calcular_fortaleza = True)
+            pdf.agregar_tabla(tabla, titulo='Resumen (fortalezas)')
+
+            tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_RONDA)
+            tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['comparativo_exp_ronda'].filasResultado, calcular_fortaleza = False)
+            pdf.agregar_tabla(tabla, titulo='Resumen (debilidades)')
         return pdf
     
     
@@ -309,6 +343,7 @@ class ReportPopulator:
 
 
             calculo = self.calcular_fila_comparativa_ronda_1_2(pcj_ronda_1, pcj_ronda_2, calcular_fortaleza)
+            print(calculo)
             datos = (match['nombre'], calculo[0], calculo[1], calculo[2], calculo[3])
             tabla.agregar_fila_datos(datos, FILA_COMPARACION)           
 
@@ -319,8 +354,8 @@ class ReportPopulator:
 
         # En este escenario no hay nada que comparar, simplemente se despliega
         if isinstance(pcj_ronda_1, str) or isinstance(pcj_ronda_2, str):
-            datos = (str(round(pcj_ronda_1*100, 2)) + '%' if isinstance(pcj_ronda_1, int) else pcj_ronda_1,
-                     str(round(pcj_ronda_2*100, 2)) + '%' if isinstance(pcj_ronda_2, int) else pcj_ronda_2,
+            datos = (str(round(pcj_ronda_1*100, 2)) + '%' if isinstance(pcj_ronda_1, float) else pcj_ronda_1,
+                     str(round(pcj_ronda_2*100, 2)) + '%' if isinstance(pcj_ronda_2, float) else pcj_ronda_2,
                      '-', '-')
         else:
             pcj_ronda_1 = round(pcj_ronda_1*100.0, 2)

@@ -12,8 +12,7 @@ session = Session()
 class ReportBuilderConnection():
     def __init__(self):
         # Crear objetos iniciales
-        print('Ocupando prueba rapida')
-        self.engine = create_engine("mysql+mysqldb://root@localhost/pruebarapida")
+        self.engine = create_engine("mysql+mysqldb://root@localhost/datatesis")
         self.session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(self.session_factory)
         self.session = self.Session()

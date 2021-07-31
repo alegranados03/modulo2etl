@@ -4,12 +4,12 @@ from report import *
 # activo)
 
 
-TIPO_REPORTE = 'DEBILIDAD_DETALLE'
+TIPO_REPORTE = 'COMPARACION_ADMISION_DIAGNOSTICO'
 TIPO_BUSQUEDA = 'INSTITUCION'
-VALORES_BUSQUEDA = [5]
+VALORES_BUSQUEDA = [1]
 
 # Variables ocuypadas solo para reportes 1 y 2
-ID_EXAMEN_ADMISION = 2
+ID_EXAMEN_ADMISION = 6
 
 # Variables solo ocupadas solo para reportes 3 y 4
 ANIO = 2021

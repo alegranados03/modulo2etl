@@ -203,15 +203,15 @@ class ReportBuilder:
         #reporte examenes de prueba
         bucketsprueba = self.obtenerBuckets('EXAMEN_PRUEBA',{'anio':anio,'seccion':seccion})
         if filtro == 'DEPARTAMENTO':
-            instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
+            instituciones = self.examenPruebaQueryExecutor.bucketsPruebaPorDepartamento(ids,seccion, anio)
             departamentos = self.commonQueryExecutor.getDepartamentos(ids)
             nombre = departamentos[0].nombre
         elif filtro == 'MUNICIPIO':
-            instituciones = ExamenPruebaQueryExecutor.bucketsPruebaPorMunicipio(ids,seccion, anio)
+            instituciones = self.examenPruebaQueryExecutor.bucketsPruebaPorMunicipio(ids,seccion, anio)
             municipios = self.commonQueryExecutor.getMunicipios(ids)
             nombre = municipios[0].nombre
         elif filtro == 'INSTITUCION':
-            instituciones = ExamenPruebaQueryExecutor.bucketsAdmisionPorInstitucion(ids,seccion, anio)
+            instituciones = self.examenPruebaQueryExecutor.bucketsPruebaPorInstitucion(ids,seccion, anio)
 
         reporteExamenPrueba = Reporte('Reporte examenes de prueba del año {0}'.format(anio),instituciones,bucketsprueba,'EXAMEN_PRUEBA',True)
         try:
