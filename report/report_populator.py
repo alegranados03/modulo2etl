@@ -6,6 +6,7 @@ import models.db as db
 import sys
 import traceback
 import json
+from random import randint
 
 from report import *
 
@@ -25,6 +26,10 @@ TABLA_RESUMEN_DEFIENCIA_DETALLE = "TABLA_RESUMEN_DEFICIENCIA_DETALLE"
 TABLA_RESUMEN_COMPARACION_RONDA = "TABLA_RESUMEN_COMPARACION_RONDA"
 TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA = "TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA"
 
+URL_REPORTE = 'http://localhost:8000/reports/'
+PATH_REPORTES = 'C:\\xampp74\\htdocs\\Tesis-2020\\public\\reports\\'
+
+
 class ReportPopulator(threading.Thread):
     def __init__(self, id_parametro_analisis, str_parametros):
         threading.Thread.__init__(self)
@@ -35,17 +40,30 @@ class ReportPopulator(threading.Thread):
         self.str_parametros = str_parametros
     
     def run(self):
-        #try:
-        # Paso 1: convertir el str de datos a JSON
-        parametros = json.loads("{0}".format(self.str_parametros))
+        try:
+            # Paso 1: convertir el str de datos a JSON
+            parametros = json.loads("{0}".format(self.str_parametros))
 
-        # Paso 2: Calcular tipo de reporte, tipo busqueda, valores busqueda
-        print(parametros)
-        resultado = self.calcular_parametros(parametros)
-        print(resultado)
-        #except Exception as e:
-        #    print('Hubo un error al procesar reporte')
-        #    print(e)
+            # Paso 2: Calcular tipo de reporte, tipo busqueda, valores busqueda
+            resultado = self.calcular_parametros(parametros)
+
+            # Paso 3: Calcular el reporte respectivo
+            reporte = self.llenar_reporte(resultado['tipo_reporte'], resultado['tipo_busqueda'], 
+                        resultado['valores_busqueda'], resultado['id_examen_admision'],
+                        resultado['anio'], resultado['seccion'], resultado['fase'])
+            
+            # Paso 4: Almacenar reporte en la carpeta publica
+            fecha = datetime.now().strftime("%d_%b_%Y")
+            n1 = randint(0, 10000)
+            n2 = randint(0, 10000)
+            
+            filename = fecha + '_' + str(n1) +  str(n2) + '.pdf'
+            link = URL_REPORTE + filename
+            reporte.output(PATH_REPORTES + filename)
+        
+        except Exception as e:
+            print('Hubo un error al procesar reporte')
+            print(e)
     
     def calcular_parametros(self, parametros):
         resultado = {}
