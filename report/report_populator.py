@@ -9,6 +9,7 @@ import json
 from random import randint
 
 from report import *
+from models import *
 
 TIPO_DEBILIDAD_FORTALEZA_TEMA = 'DEBILIDAD_FORTALEZA_TEMA'
 TIPO_DEBILIDAD_DETALLE = 'DEBILIDAD_DETALLE'
@@ -46,6 +47,7 @@ class ReportPopulator(threading.Thread):
 
             # Paso 2: Calcular tipo de reporte, tipo busqueda, valores busqueda
             resultado = self.calcular_parametros(parametros)
+            print(resultado)
 
             # Paso 3: Calcular el reporte respectivo
             reporte = self.llenar_reporte(resultado['tipo_reporte'], resultado['tipo_busqueda'], 
@@ -88,10 +90,10 @@ class ReportPopulator(threading.Thread):
             resultado['tipo_busqueda'] = TIPO_BUSQUEDA_MUNICIPIO
         
         # Paso 3: Calculando id_examen, anio, seccion, ronda
-        if 'id_examen_admision' in parametros.keys():
-            resultado['id_examen_admision'] = int(parametros['id_examen_admision'])
+        if 'examen_id' in parametros.keys():
+            resultado['id_examen_admision'] = int(parametros['examen_id'])
         else:
-            resultado['id_examen_admision'] = 6
+            resultado['id_examen_admision'] = -1
         
         if 'anio' in parametros.keys():
             resultado['anio'] = int(parametros['anio'])

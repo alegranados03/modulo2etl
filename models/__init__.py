@@ -36,3 +36,5 @@ from models.bucket_deficiencia_examen_prueba_instituto import *
 
 from models.proceso_analisis import *
 from models.proceso_feedback import *
+
+from models.parametros_analisis import *
