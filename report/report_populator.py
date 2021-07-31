@@ -39,6 +39,8 @@ class ReportPopulator(threading.Thread):
 
         self.id_parametro_analisis = id_parametro_analisis
         self.str_parametros = str_parametros
+        self.valores_procesados = 0
+        self.numero_valores = 0
     
     def run(self):
         #try:
@@ -75,6 +77,15 @@ class ReportPopulator(threading.Thread):
 
         #    print('Hubo un error al procesar reporte')
         #    print(e)
+    
+    def actualizar_progreso(self, pcj = None):
+        porcentaje = pcj
+
+        if pcj is None:
+            porcentaje = self.valores_procesados / self.numero_valores
+        
+        self.proceso_reporte.pcj_analisis = int(porcentaje*100)
+        self.db.session.commit()
     
     def inicializar_proceso_reporte(self):
         # Paso 1: Obtener proceso de reporte
@@ -152,6 +163,7 @@ class ReportPopulator(threading.Thread):
                 valores_busqueda.extend([int(x) for x in parametros['municipios'][key]])
         
         resultado['valores_busqueda'] = valores_busqueda
+        self.numero_valores = len(valores_busqueda)
 
         
         return resultado
@@ -216,6 +228,9 @@ class ReportPopulator(threading.Thread):
                 datos = (fila.nombre, str(100.0 - fila.porcentaje_acierto) + '%', str(fila.porcentaje_acierto) + '%')
                 tabla.agregar_fila_datos(datos, FILA_RESUMEN)
             pdf.agregar_tabla(tabla)
+
+            self.valores_procesados += 1
+            self.actualizar_progreso()
             
 
         return pdf
@@ -284,6 +299,9 @@ class ReportPopulator(threading.Thread):
                 contador += 1
             
             pdf.agregar_tabla(tabla)
+
+            self.valores_procesados += 1
+            self.actualizar_progreso()
         return pdf
     
     """
@@ -344,6 +362,8 @@ class ReportPopulator(threading.Thread):
             tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['reporte_comparativo'].filasResultado, calcular_fortaleza = False)
             pdf.agregar_tabla(tabla, titulo='Resumen (debilidades)')
 
+            self.valores_procesados += 1
+            self.actualizar_progreso()
         return pdf
     
     """
@@ -403,6 +423,9 @@ class ReportPopulator(threading.Thread):
             tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_RONDA)
             tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['comparativo_exp_ronda'].filasResultado, calcular_fortaleza = False)
             pdf.agregar_tabla(tabla, titulo='Resumen (debilidades)')
+
+            self.valores_procesados += 1
+            self.actualizar_progreso()
         return pdf
     
     
