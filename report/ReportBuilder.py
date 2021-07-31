@@ -145,6 +145,10 @@ class ReportBuilder:
                 instituciones = self.examenAdmisionQueryExecutor.bucketsAdmisionPorInstitucion(id,ids)
 
             reporte = Reporte('Reporte examen de admisión del año {0} fase {1}'.format(anio,fase),instituciones,buckets,'ADMISION',True)
+            try:
+                reporte.nombreLugar = nombre
+            except:
+                pass
             reporte.ejecutarProcesamiento()
             reportes.append(reporte)
         
