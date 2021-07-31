@@ -42,6 +42,9 @@ class ReportPopulator(threading.Thread):
     
     def run(self):
         try:
+            # Paso 0: Inicializar proceso de reporte
+            self.inicializar_proceso_reporte()
+
             # Paso 1: convertir el str de datos a JSON
             parametros = json.loads("{0}".format(self.str_parametros))
 
@@ -62,11 +65,35 @@ class ReportPopulator(threading.Thread):
             filename = fecha + '_' + str(n1) +  str(n2) + '.pdf'
             link = URL_REPORTE + filename
             reporte.output(PATH_REPORTES + filename)
+
+            # Paso 5: Finalizar proceso y publicar URL
+            self.finalizar_proceso_reporte(link)
         
         except Exception as e:
             print('Hubo un error al procesar reporte')
             print(e)
     
+    def inicializar_proceso_reporte(self):
+        # Paso 1: Obtener proceso de reporte
+        self.obtener_proceso_reporte()
+
+        # Paso 2: Cambiar el estado a ejecutando
+        self.cambiar_estado_proceso_reporte('EJECUTANDO')
+    
+    def finalizar_proceso_reporte(self, url):
+        self.cambiar_estado_proceso_reporte('FINALIZADO')
+        self.proceso_reporte.enlace = url
+        self.proceso_reporte.pcj_analisis = 100
+        self.db.session.commit()
+    
+    def obtener_proceso_reporte(self):
+        self.proceso_reporte = self.db.session.query(ParametrosAnalisis).get(self.id_parametro_analisis)
+
+    
+    def cambiar_estado_proceso_reporte(self, estado):
+        self.proceso_reporte.estado = estado
+        self.db.session.commit()
+
     def calcular_parametros(self, parametros):
         resultado = {}
 
