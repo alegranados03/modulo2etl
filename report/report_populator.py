@@ -1,3 +1,12 @@
+import threading
+import time
+import logging
+import datetime
+import models.db as db
+import sys
+import traceback
+import json
+
 from report import *
 
 TIPO_DEBILIDAD_FORTALEZA_TEMA = 'DEBILIDAD_FORTALEZA_TEMA'
@@ -16,11 +25,82 @@ TABLA_RESUMEN_DEFIENCIA_DETALLE = "TABLA_RESUMEN_DEFICIENCIA_DETALLE"
 TABLA_RESUMEN_COMPARACION_RONDA = "TABLA_RESUMEN_COMPARACION_RONDA"
 TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA = "TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA"
 
-class ReportPopulator:
-    def __init__(self):
-        print('Hola Mundo')
+class ReportPopulator(threading.Thread):
+    def __init__(self, id_parametro_analisis, str_parametros):
+        threading.Thread.__init__(self)
         self.db = ReportBuilderConnection()
         self.report_builder = ReportBuilder(self.db)
+
+        self.id_parametro_analisis = id_parametro_analisis
+        self.str_parametros = str_parametros
+    
+    def run(self):
+        #try:
+        # Paso 1: convertir el str de datos a JSON
+        parametros = json.loads("{0}".format(self.str_parametros))
+
+        # Paso 2: Calcular tipo de reporte, tipo busqueda, valores busqueda
+        print(parametros)
+        resultado = self.calcular_parametros(parametros)
+        print(resultado)
+        #except Exception as e:
+        #    print('Hubo un error al procesar reporte')
+        #    print(e)
+    
+    def calcular_parametros(self, parametros):
+        resultado = {}
+
+        # Paso 1: Calculamos tipo reporte
+        tipo_reporte = int(parametros['reporte'])
+        if tipo_reporte == 1:
+            resultado['tipo_reporte'] = TIPO_DEBILIDAD_FORTALEZA_TEMA
+        elif tipo_reporte == 2:
+            resultado['tipo_reporte'] = TIPO_DEBILIDAD_DETALLE
+        elif tipo_reporte == 3:
+            resultado['tipo_reporte'] = TIPO_COMPARACION_RONDA_1_2
+        else:
+            resultado['tipo_reporte'] = TIPO_COMPARACION_ADMISION_DIAGNOSTICO
+        
+        # Paso 2: Calculamos tipo de busqueda
+        if parametros['filtro'] == 'institucion':
+            resultado['tipo_busqueda'] = TIPO_BUSQUEDA_INSTITUCION
+        elif parametros['filtro'] == 'departamento':
+            resultado['tipo_busqueda'] = TIPO_BUSQUEDA_DEPARTAMENTO
+        elif parametros['filtro'] == 'municipio':
+            resultado['tipo_busqueda'] = TIPO_BUSQUEDA_MUNICIPIO
+        
+        # Paso 3: Calculando id_examen, anio, seccion, ronda
+        if 'id_examen_admision' in parametros.keys():
+            resultado['id_examen_admision'] = int(parametros['id_examen_admision'])
+        else:
+            resultado['id_examen_admision'] = 6
+        
+        if 'anio' in parametros.keys():
+            resultado['anio'] = int(parametros['anio'])
+        else:
+            resultado['anio'] = -1
+        
+        if 'seccion' in parametros.keys():
+            resultado['seccion'] = int(parametros['seccion'])
+        else:
+            resultado['seccion'] = -1
+        
+        if 'fase' in parametros.keys():
+            resultado['fase'] = int(parametros['fase'])
+        else:
+            resultado['fase'] = -1
+        
+        # Paso 4: Calcular los valores de busqueda en base al tipo busqueda
+        valores_busqueda = []
+        if resultado['tipo_busqueda'] == TIPO_BUSQUEDA_INSTITUCION:
+            for key in parametros['instituciones']:
+                valores_busqueda.extend([int(x) for x in parametros['instituciones'][key]])
+        
+        resultado['valores_busqueda'] = valores_busqueda
+
+        
+        return resultado
+        
     
     def llenar_reporte(self, tipo_reporte, tipo_busqueda, valores_busqueda, id_examen, anio, seccion, ronda):
         if tipo_reporte == TIPO_DEBILIDAD_FORTALEZA_TEMA:

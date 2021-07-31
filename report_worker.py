@@ -16,9 +16,6 @@ ANIO = 2021
 SECCION = 1
 RONDA = 1
 
-"""
-    LLAMADA PARA REPORTE
-"""
 rp = ReportPopulator()
 pdf = rp.llenar_reporte(TIPO_REPORTE, TIPO_BUSQUEDA, VALORES_BUSQUEDA, ID_EXAMEN_ADMISION, ANIO, SECCION, RONDA)
 pdf.output('reporte_output.pdf')
