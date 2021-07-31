@@ -41,37 +41,40 @@ class ReportPopulator(threading.Thread):
         self.str_parametros = str_parametros
     
     def run(self):
-        try:
-            # Paso 0: Inicializar proceso de reporte
-            self.inicializar_proceso_reporte()
+        #try:
+        # Paso 0: Inicializar proceso de reporte
+        self.inicializar_proceso_reporte()
 
-            # Paso 1: convertir el str de datos a JSON
-            parametros = json.loads("{0}".format(self.str_parametros))
+        # Paso 1: convertir el str de datos a JSON
+        parametros = json.loads("{0}".format(self.str_parametros))
 
-            # Paso 2: Calcular tipo de reporte, tipo busqueda, valores busqueda
-            resultado = self.calcular_parametros(parametros)
-            print(resultado)
+        # Paso 2: Calcular tipo de reporte, tipo busqueda, valores busqueda
+        resultado = self.calcular_parametros(parametros)
+        print(resultado)
 
-            # Paso 3: Calcular el reporte respectivo
-            reporte = self.llenar_reporte(resultado['tipo_reporte'], resultado['tipo_busqueda'], 
-                        resultado['valores_busqueda'], resultado['id_examen_admision'],
-                        resultado['anio'], resultado['seccion'], resultado['fase'])
-            
-            # Paso 4: Almacenar reporte en la carpeta publica
-            fecha = datetime.now().strftime("%d_%b_%Y")
-            n1 = randint(0, 10000)
-            n2 = randint(0, 10000)
-            
-            filename = fecha + '_' + str(n1) +  str(n2) + '.pdf'
-            link = URL_REPORTE + filename
-            reporte.output(PATH_REPORTES + filename)
-
-            # Paso 5: Finalizar proceso y publicar URL
-            self.finalizar_proceso_reporte(link)
+        # Paso 3: Calcular el reporte respectivo
+        reporte = self.llenar_reporte(resultado['tipo_reporte'], resultado['tipo_busqueda'], 
+                    resultado['valores_busqueda'], resultado['id_examen_admision'],
+                    resultado['anio'], resultado['seccion'], resultado['fase'])
         
-        except Exception as e:
-            print('Hubo un error al procesar reporte')
-            print(e)
+        # Paso 4: Almacenar reporte en la carpeta publica
+        fecha = datetime.now().strftime("%d_%b_%Y")
+        n1 = randint(0, 10000)
+        n2 = randint(0, 10000)
+        
+        filename = fecha + '_' + str(n1) +  str(n2) + '.pdf'
+        link = URL_REPORTE + filename
+        reporte.output(PATH_REPORTES + filename)
+
+        # Paso 5: Finalizar proceso y publicar URL
+        self.finalizar_proceso_reporte(link)
+        
+        #except Exception as e:
+        #    if self.proceso_reporte is not None:
+        #        self.cambiar_estado_proceso_reporte('ERROR')
+
+        #    print('Hubo un error al procesar reporte')
+        #    print(e)
     
     def inicializar_proceso_reporte(self):
         # Paso 1: Obtener proceso de reporte
@@ -142,6 +145,11 @@ class ReportPopulator(threading.Thread):
         if resultado['tipo_busqueda'] == TIPO_BUSQUEDA_INSTITUCION:
             for key in parametros['instituciones']:
                 valores_busqueda.extend([int(x) for x in parametros['instituciones'][key]])
+        elif resultado['tipo_busqueda'] == TIPO_BUSQUEDA_DEPARTAMENTO:
+            valores_busqueda.extend([int(x) for x in parametros['departamentos']])
+        elif resultado['tipo_busqueda'] == TIPO_BUSQUEDA_MUNICIPIO:
+            for key in parametros['municipios']:
+                valores_busqueda.extend([int(x) for x in parametros['municipios'][key]])
         
         resultado['valores_busqueda'] = valores_busqueda
 
