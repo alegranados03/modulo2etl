@@ -28,7 +28,7 @@ TABLA_RESUMEN_COMPARACION_RONDA = "TABLA_RESUMEN_COMPARACION_RONDA"
 TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA = "TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA"
 
 URL_REPORTE = 'http://localhost:8000/reports/'
-PATH_REPORTES = 'C:\\xampp74\\htdocs\\Tesis-2020\\public\\reports\\'
+PATH_REPORTES = 'C:\\Users\\AlejandroGranados\\Documents\\GitHub\\Tesis-2020\\public\\reports\\'
 
 
 class ReportPopulator(threading.Thread):
@@ -225,7 +225,7 @@ class ReportPopulator(threading.Thread):
             tabla = pdf.crear_tabla(TABLA_RESUMEN_FORTALEZA_DEFICIENCIA)
             temas_ordenado_acierto = sorted(list(query.filas.values()), key = lambda fila: fila.porcentaje_acierto, reverse=True)
             for fila in temas_ordenado_acierto:
-                datos = (fila.nombre, str(100.0 - fila.porcentaje_acierto) + '%', str(fila.porcentaje_acierto) + '%')
+                datos = (fila.nombre, str(round(100.0 - fila.porcentaje_acierto,2)) + '%', str(round(fila.porcentaje_acierto,2)) + '%')
                 tabla.agregar_fila_datos(datos, FILA_RESUMEN)
             pdf.agregar_tabla(tabla)
 
@@ -284,7 +284,7 @@ class ReportPopulator(threading.Thread):
             tabla = pdf.crear_tabla(TABLA_RESUMEN_DEFIENCIA_DETALLE)
             contador = 1
             for fila in temas_ordenado_fallos:
-                datos = [str(contador) + '. ' + fila.nombre + ' (' + str(fila.porcentaje_fallo) + '%)']
+                datos = [str(contador) + '. ' + fila.nombre + ' (' + str(round(fila.porcentaje_fallo,2)) + '%)']
                 tabla.agregar_fila_datos(datos, FILA_RESUMEN_TEMA)
 
                 for deficiencia in fila.deficiencias.values():
