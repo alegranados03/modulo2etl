@@ -74,7 +74,7 @@ class EtlSimpleWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV resumen area de conocimiento")
         carga_resumen = proceso.proceso_etl_resumen_simple[0]
-        f = open(db.RUTA_ARCHIVOS + carga_resumen.nombre_archivo_fisico, "r", encoding="utf-8")
+        f = open(db.RUTA_ARCHIVOS + carga_resumen.nombre_archivo_fisico, "r", encoding="utf-8", errors='ignore', errors='ignore')
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de resumen realizado con exito")

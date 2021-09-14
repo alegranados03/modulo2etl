@@ -101,7 +101,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV preguntas")
         carga_preguntas = proceso.proceso_etl_carga_preguntas[0]
-        f = open(db.RUTA_ARCHIVOS + carga_preguntas.nombre_archivo_fisico, "r", encoding="utf-8")
+        f = open(db.RUTA_ARCHIVOS + carga_preguntas.nombre_archivo_fisico, "r", encoding="utf-8", errors='ignore')
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de preguntas realizado con exito")
@@ -198,7 +198,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV preguntas")
         carga_literales = proceso.proceso_etl_carga_literales[0]
-        f = open(db.RUTA_ARCHIVOS + carga_literales.nombre_archivo_fisico, "r", encoding="utf-8")
+        f = open(db.RUTA_ARCHIVOS + carga_literales.nombre_archivo_fisico, "r", encoding="utf-8", errors='ignore')
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de preguntas realizado con exito")
@@ -327,7 +327,7 @@ class EtlComplexWorker(EtlWorker):
         #         buscar el archivo de preguntas
         self.log("INFO", "Iniciando cargado de CSV respuestas")
         carga_respuestas = proceso.proceso_etl_carga_respuestas[0]
-        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r", encoding="utf-8")
+        f = open(db.RUTA_ARCHIVOS + carga_respuestas.nombre_archivo_fisico, "r", encoding="utf-8", errors='ignore')
         
         if (f is not None):
             self.log("INFO", "Carga de CSV de respuestas realizado con exito")
