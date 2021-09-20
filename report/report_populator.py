@@ -532,12 +532,10 @@ class ReportPopulator(threading.Thread):
         match_inicial_2 = None
         if calcular_fortaleza:
             match_inicial = [fila for fila in resultados 
-                if (isinstance(fila['aciertos']['examen1'], float) and fila['aciertos']['examen1'] >= 0.5) or
-                   (isinstance(fila['aciertos']['examen2'], float) and fila['aciertos']['examen2'] >= 0.5)]
+                if (isinstance(fila['aciertos']['examen1'], float) and fila['aciertos']['examen1'] >= 0.5)]
         else:
             match_inicial = [fila for fila in resultados 
-                if (isinstance(fila['aciertos']['examen1'], float) and fila['aciertos']['examen1'] < 0.5) or
-                   (isinstance(fila['aciertos']['examen2'], float) and fila['aciertos']['examen2'] < 0.5)]
+                if (isinstance(fila['aciertos']['examen1'], float) and fila['aciertos']['examen1'] < 0.5)]
         
         # En base a los matches iniciales, calcular pcj de mejora o empeora
         for match in match_inicial:
