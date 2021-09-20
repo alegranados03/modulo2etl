@@ -162,14 +162,26 @@ class ReportPopulator(threading.Thread):
         # Paso 4: Calcular los valores de busqueda en base al tipo busqueda
         valores_busqueda = []
         if resultado['tipo_busqueda'] == TIPO_BUSQUEDA_INSTITUCION:
-            for key in parametros['instituciones']:
-                valores_busqueda.extend([int(x) for x in parametros['instituciones'][key]])
+            instituciones_completas = 0
+            if 'instituciones_completas' in parametros.keys():
+                instituciones_completas = int(parametros['instituciones_completas'])
+            
+            if instituciones_completas == 1:
+                instituciones = self.db.session.query(Institucion.id).all()
+                valores_busqueda.extend([institucion[0] for institucion in instituciones])
+            else:
+                for key in parametros['instituciones']:
+                    valores_busqueda.extend([int(x) for x in parametros['instituciones'][key]])
         elif resultado['tipo_busqueda'] == TIPO_BUSQUEDA_DEPARTAMENTO:
             valores_busqueda.extend([int(x) for x in parametros['departamentos']])
         elif resultado['tipo_busqueda'] == TIPO_BUSQUEDA_MUNICIPIO:
+            municipios_completos = 0
             if 'municipios_completos' in parametros.keys():
-                municipios = self.db.session.query(Municipio).all()
-                valores_busqueda.extend([municipio.id for municipio in municipios])
+                municipios_completos = int(parametros['municipios_completos'])
+            
+            if municipios_completos == 1:
+                municipios = self.db.session.query(Municipio.id).all()
+                valores_busqueda.extend([municipio[0] for municipio in municipios])
             else:
                 for key in parametros['municipios']:
                     valores_busqueda.extend([int(x) for x in parametros['municipios'][key]])
