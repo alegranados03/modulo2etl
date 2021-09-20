@@ -5,7 +5,13 @@ from sqlalchemy.orm import scoped_session
 
 #Para Ubuntu(Testeado en la version 20.04)
 #engine = create_engine("mysql+mysqldb://root@localhost:81/tesis?unix_socket=/opt/lampp/var/mysql/mysql.sock")
-connection_string = "mysql+mysqldb://root@localhost/datatesis"
+
+# Ejemplo Windows
+connection_string = "mysql+mysqldb://root@localhost/tesis2020"
+
+# Ejemplo Linux
+# connection_string = "mysql+mysqldb://phpmyadmin:tesis2020$@localhost:3306/tesis2020"
+
 Database = declarative_base()
 
 TBL_PROCESO_ETL_FK = "proceso_etls.id_proceso_etl"
@@ -33,7 +39,11 @@ TBL_BUCKET_TEMA_EXAMEN_PRUEBA_FK = "bucket_tema_exp.id"
 TBL_BUCKET_TEMA_EXAMEN_PRUEBA_INSTITUTO_FK = "bucket_tema_exp_ins.id"
 TBL_BUCKET_DEFICIENCIA_EXAMEN_PRUEBA_FK = "bucket_def_exp.id"
 
+# Ejemplo Windows
 RUTA_ARCHIVOS = "C:\\xampp\\htdocs\\Tesis-2020\\public\\csv\\"
+
+# Ejemplo Linux
+# RUTA_ARCHIVOS = "/var/www/Tesis-2020/public/csv/"
 
 
 # Tablas intermedias para examenes de prueba

@@ -27,9 +27,17 @@ TABLA_RESUMEN_DEFIENCIA_DETALLE = "TABLA_RESUMEN_DEFICIENCIA_DETALLE"
 TABLA_RESUMEN_COMPARACION_RONDA = "TABLA_RESUMEN_COMPARACION_RONDA"
 TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA = "TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA"
 
+#Ejemplo Windows
 URL_REPORTE = 'http://localhost:8000/reports/'
-PATH_REPORTES = 'C:\\Users\\AlejandroGranados\\Documents\\GitHub\\Tesis-2020\\public\\reports\\'
 
+# Ejemplo Linux
+# URL_REPORTE = 'http://159.203.185.142/reports/'
+
+# Ejemplo Windows
+PATH_REPORTES = 'C:\\xampp\\htdocs\\Tesis-2020\\public\\reports\\'
+
+# Ejemplo Linux
+# PATH_REPORTES = '/var/www/Tesis-2020/public/reports/'
 
 class ReportPopulator(threading.Thread):
     def __init__(self, id_parametro_analisis, str_parametros):
