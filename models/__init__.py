@@ -38,3 +38,5 @@ from models.proceso_analisis import *
 from models.proceso_feedback import *
 
 from models.parametros_analisis import *
+
+from models.municipio import *

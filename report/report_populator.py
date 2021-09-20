@@ -167,8 +167,12 @@ class ReportPopulator(threading.Thread):
         elif resultado['tipo_busqueda'] == TIPO_BUSQUEDA_DEPARTAMENTO:
             valores_busqueda.extend([int(x) for x in parametros['departamentos']])
         elif resultado['tipo_busqueda'] == TIPO_BUSQUEDA_MUNICIPIO:
-            for key in parametros['municipios']:
-                valores_busqueda.extend([int(x) for x in parametros['municipios'][key]])
+            if 'municipios_completos' in parametros.keys():
+                municipios = self.db.session.query(Municipio).all()
+                valores_busqueda.extend([municipio.id for municipio in municipios])
+            else:
+                for key in parametros['municipios']:
+                    valores_busqueda.extend([int(x) for x in parametros['municipios'][key]])
         
         resultado['valores_busqueda'] = valores_busqueda
         self.numero_valores = len(valores_busqueda)
