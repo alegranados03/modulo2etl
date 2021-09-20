@@ -456,6 +456,12 @@ class ReportPopulator(threading.Thread):
     """
         HELPER FUNCTIONS
     """
+    def calcular_pcj_celda(self, numerador, denominador):
+        if denominador == 0:
+            return ' (0%)'
+        else:
+            return ' (' + str(round((numerador/(denominador*1.0))*100, 2)) + '%)'
+
     def procesar_tabla_fortaleza_deficiencia(self, tabla, fortaleza_deficiencia, is_fortaleza=False):
         contador = 1
         for fila in fortaleza_deficiencia:
@@ -463,12 +469,20 @@ class ReportPopulator(threading.Thread):
 
             if is_fortaleza:
                 datos = (str(contador) + '. ' + fila.nombre, 
-                        str(fila.general['Npreguntas']), str(fila.general['M']), str(fila.general['F']),
-                        str(fila.aciertos['Npreguntas']), str(fila.aciertos['M']), str(fila.aciertos['F']))
+                        str(fila.general['Npreguntas']), 
+                        str(fila.general['M']) + self.calcular_pcj_celda(fila.general['M'], fila.general['Npreguntas']),
+                        str(fila.general['F']) + self.calcular_pcj_celda(fila.general['F'], fila.general['Npreguntas']),
+                        str(fila.aciertos['Npreguntas']), 
+                        str(fila.aciertos['M']) + self.calcular_pcj_celda(fila.aciertos['M'], fila.aciertos['Npreguntas']), 
+                        str(fila.aciertos['F']) + self.calcular_pcj_celda(fila.aciertos['F'], fila.aciertos['Npreguntas']))
             else:
                 datos = (str(contador) + '. ' + fila.nombre, 
-                        str(fila.general['Npreguntas']), str(fila.general['M']), str(fila.general['F']),
-                        str(fila.fallos['Npreguntas']), str(fila.fallos['M']), str(fila.fallos['F']))
+                        str(fila.general['Npreguntas']), 
+                        str(fila.general['M']) + self.calcular_pcj_celda(fila.general['M'], fila.general['Npreguntas']),
+                        str(fila.general['F']) + self.calcular_pcj_celda(fila.general['F'], fila.general['Npreguntas']),
+                        str(fila.fallos['Npreguntas']), 
+                        str(fila.fallos['M']) + self.calcular_pcj_celda(fila.fallos['M'], fila.fallos['Npreguntas']), 
+                        str(fila.fallos['F']) + self.calcular_pcj_celda(fila.fallos['F'], fila.fallos['Npreguntas']))
 
             tabla.agregar_fila_datos(datos, FILA_TEMA)
             contador += 1
@@ -491,8 +505,12 @@ class ReportPopulator(threading.Thread):
             n_aciertos_m = sum(debilidad.fallos['M'] for debilidad in fortaleza_deficiencia)
             n_aciertos_f = sum(debilidad.fallos['F'] for debilidad in fortaleza_deficiencia)
         
-        totales = ('Total', str(n_preg_total), str(n_preg_m), str(n_preg_f), 
-                str(n_aciertos_total), str(n_aciertos_m), str(n_aciertos_f))
+        totales = ('Total', str(n_preg_total), 
+                str(n_preg_m) + self.calcular_pcj_celda(n_preg_m, n_preg_total), 
+                str(n_preg_f) + self.calcular_pcj_celda(n_preg_f, n_preg_total), 
+                str(n_aciertos_total), 
+                str(n_aciertos_m) + self.calcular_pcj_celda(n_aciertos_m, n_aciertos_total), 
+                str(n_aciertos_f) + self.calcular_pcj_celda(n_aciertos_f, n_aciertos_total))
         tabla.agregar_fila_datos(totales, FILA_TEMA, subtotales = True)
 
         return tabla
