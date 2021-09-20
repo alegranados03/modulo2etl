@@ -287,20 +287,30 @@ class ReportPopulator(threading.Thread):
             contador = 1
             for fila in temas_ordenado_fallos:
                 datos = (str(contador) + '. ' + fila.nombre, 
-                        str(fila.general['Npreguntas']), str(fila.general['M']), str(fila.general['F']),
-                        str(fila.fallos['Npreguntas']), str(fila.fallos['M']), str(fila.fallos['F']))
+                        str(fila.general['Npreguntas']), 
+                        str(fila.general['M']) + self.calcular_pcj_celda(fila.general['M'], fila.general['Npreguntas']), 
+                        str(fila.general['F']) + self.calcular_pcj_celda(fila.general['F'], fila.general['Npreguntas']),
+                        str(fila.fallos['Npreguntas']), 
+                        str(fila.fallos['M']) + self.calcular_pcj_celda(fila.fallos['M'], fila.fallos['Npreguntas']), 
+                        str(fila.fallos['F']) + self.calcular_pcj_celda(fila.fallos['F'], fila.fallos['Npreguntas']))
                 tabla.agregar_fila_datos(datos, FILA_TEMA)
 
                 # Por cada tema, imprimimos las deficiencias
                 for deficiencia in fila.deficiencias.values():
                     datos = (deficiencia['enunciado'], '-', '-', '-',
-                            str(deficiencia['fallos']), str(deficiencia['fallos_femenino']), str(deficiencia['fallos_masculino']))
+                            str(deficiencia['fallos']), 
+                            str(deficiencia['fallos_masculino']) + self.calcular_pcj_celda(deficiencia['fallos_masculino'], deficiencia['fallos']), 
+                            str(deficiencia['fallos_femenino']) + self.calcular_pcj_celda(deficiencia['fallos_femenino'], deficiencia['fallos']))
                     tabla.agregar_fila_datos(datos, FILA_DEFICIENCIA)
                 contador += 1
             
             # Agregando los totales de la tabla
-            totales = ('Total', str(query.totales['total_preguntas']), str(query.totales['total_preguntas_masculino']), str(query.totales['total_preguntas_femenino']),
-                      str(query.totales['total_fallos']), str(query.totales['total_fallos_masculino']), str(query.totales['total_fallos_femenino']))
+            totales = ('Total', str(query.totales['total_preguntas']), 
+                      str(query.totales['total_preguntas_masculino']) + self.calcular_pcj_celda(query.totales['total_preguntas_masculino'], query.totales['total_preguntas']), 
+                      str(query.totales['total_preguntas_femenino']) + self.calcular_pcj_celda(query.totales['total_preguntas_femenino'], query.totales['total_preguntas']),
+                      str(query.totales['total_fallos']), 
+                      str(query.totales['total_fallos_masculino']) + self.calcular_pcj_celda(query.totales['total_fallos_masculino'], query.totales['total_fallos']), 
+                      str(query.totales['total_fallos_femenino']) + self.calcular_pcj_celda(query.totales['total_fallos_femenino'], query.totales['total_fallos']))
             tabla.agregar_fila_datos(totales, FILA_TEMA, subtotales = True)
             pdf.agregar_tabla(tabla, titulo = 'Detalle debilidades')
 
