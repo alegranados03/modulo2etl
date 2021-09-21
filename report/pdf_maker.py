@@ -115,6 +115,7 @@ class PDF(FPDF):
         self.nivel = nivel
         self.ahora = datetime.now()
         self.reporte_font = font
+        self.primera_seccion = True
 
         # Paso 1: Instruir a FPDF en crear una nueva pagina
         #         Y definir Line break
@@ -140,11 +141,21 @@ class PDF(FPDF):
         self.cell(0, 8, f'{self.page_no()}', align='C')
     
     def agregar_seccion(self, nombre):
+        if not self.primera_seccion:
+            self.add_page()
+        else:
+            self.primera_seccion = False
+        
         self.set_font(self.reporte_font, 'B', 12)
         self.cell(0, 8, nombre, ln=True, align='L')
         self.ln(3)
     
     def agregar_tabla(self, tabla, titulo=None):
+        # Paso 0: Si el tamanio restante es menor a 25, saltar a la siguiente pagina
+        y = self.get_y()
+        if (y + 35 > self.eph):
+                self.add_page()
+
         # Paso 1: Agregar el titulo si existe
         if titulo is not None:
             self.set_font(self.reporte_font, '', 12)
@@ -239,6 +250,8 @@ class PDF(FPDF):
     """
         HELPER FUNCTIONS
     """
+    #def determinar_salto_pagina(self, y)
+
     def crear_tabla(self, tipo):
         columnas = []
         tamanios = []
