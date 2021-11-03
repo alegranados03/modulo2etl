@@ -144,13 +144,13 @@ def rand_generator_by_type(tipo, n_preguntas):
     opciones = ["MALO", "MEDIO", "BUENO"]
 	
 	# MALO, MEDIO, BUENO
-    c_values = [0.095390970631294, 0.07018694790714, 0.055834612780239]
+    c_values = [0.241656990752217, 0.119822867358221, 0.055834612780239]
 	
 	# MALO, MEDIO, BUENO
-    rates = [0.24, 0.4, 0.4]
+    rates = [0.76, 0.5, 0.9]
 	
 	# MALO, MEDIO, BUENO
-    shapes = [2.4, 6.0, 9.0]
+    shapes = [2.4, 3.6, 9.0]
 	
     i = opciones.index(tipo)
     
@@ -268,6 +268,7 @@ f_ronda_1 = open("respuestas_ronda_1.csv", "w")
 f_ronda_2 = open("respuestas_ronda_2.csv", "w")
 f_ronda_1_simple = open("respuestas_ronda_1_simple.csv", "w")
 f_ronda_2_simple = open("respuestas_ronda_2_simple.csv", "w")
+f_log = open("log_simulacion.txt", "w")
 
 f_ronda_1.write("NIE;ID_PREGUNTA;ID_LITERAL\n")
 f_ronda_2.write("NIE;ID_PREGUNTA;ID_LITERAL\n")
@@ -277,6 +278,7 @@ f_ronda_2_simple.write("NIE;PREG;RESP\n")
 print("----- INICIANDO SIMULACION -----")
 for instituto in instituciones:
     tipo = rand_dist_empirical()
+    f_log.write("########## ID_INSTITUCION = " + str(instituto.id) + " TIPO = " + tipo + " NOMBRE = " + instituto.nombre + "##########" + "\n")
     print("########## ID_INSTITUCION = " + str(instituto.id) + " TIPO = " + tipo + " NOMBRE = " + instituto.nombre + "##########")
 
     # Reglas:
@@ -286,8 +288,10 @@ for instituto in instituciones:
         correctas_ronda_1 = rand_generator_by_type(tipo, len(examenes[0].preguntas))
         correctas_ronda_2 = rand_generator_by_type(tipo, len(examenes[1].preguntas))
         
+        f_log.write("Estudiante NIE =" + str(estudiante.nie) + " RONDA 1 = " + str(correctas_ronda_1) + "\n")
         print("Estudiante NIE =" + str(estudiante.nie) + " RONDA 1 = " + str(correctas_ronda_1))
         if (correctas_ronda_1 < len(examenes[0].preguntas)/2):
+            f_log.write("Estudiante NIE =" + str(estudiante.nie) + " RONDA 2 = " + str(correctas_ronda_2) + "\n")
             print("Estudiante NIE =" + str(estudiante.nie) + " RONDA 2 = " + str(correctas_ronda_2))
 
         intento_1 = contestar_examen(estudiante, examenes[0], correctas_ronda_1)
@@ -307,6 +311,7 @@ f_ronda_1.close()
 f_ronda_2.close()
 f_ronda_1_simple.close()
 f_ronda_2_simple.close()
+f_log.close()
 print("Terminado...")
 print("Almacenando datos recolectados en DB")
 
