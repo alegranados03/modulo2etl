@@ -144,7 +144,7 @@ def rand_generator_by_type(tipo, n_preguntas):
     opciones = ["MALO", "MEDIO", "BUENO"]
 	
 	# MALO, MEDIO, BUENO
-    c_values = [0.241656990752217, 0.119822867358221, 0.055834612780239]
+    c_values = [0.241656990752217, 0.119822867358221, 0.125627870904449]
 	
 	# MALO, MEDIO, BUENO
     rates = [0.76, 0.5, 0.9]
