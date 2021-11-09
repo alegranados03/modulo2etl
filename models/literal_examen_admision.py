@@ -19,6 +19,9 @@ class LiteralExamenAdmision(db.Database):
     
     # Propiedades relationship
     id_pregunta_examen_admision = Column(Integer, ForeignKey(db.TBL_PREGUNTA_EXAMEN_ADMISION_FK))
+
+    etiqueta_id = Column(Integer, ForeignKey(db.TBL_ETIQUETA_FK), nullable = True)
+    etiqueta = relationship("Etiqueta")
     
     
     def __init__(self, id_pregunta_examen_admision, id_referencia,
