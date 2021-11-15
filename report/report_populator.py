@@ -416,6 +416,10 @@ class ReportPopulator(threading.Thread):
             #         respectivo
             query = self.report_builder.reporteRendimientoGlobal(tipo_busqueda, [valor], anio, seccion, ronda)
             titulo = 'Test'
+            encabezado = 'primera fase'
+
+            if (ronda == 2):
+                encabezado = 'segunda fase'
 
             if (tipo_busqueda == TIPO_BUSQUEDA_INSTITUCION):
                 titulo = query['reporte_ronda'].instituciones[0].nombre
@@ -430,11 +434,11 @@ class ReportPopulator(threading.Thread):
 
             tabla = pdf.crear_tabla(TABLA_FORTALEZA_TEMA)
             tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, fortalezas, is_fortaleza = True)
-            pdf.agregar_tabla(tabla, titulo='Resumen fortalezas primera fase')
+            pdf.agregar_tabla(tabla, titulo='Resumen fortalezas ' + encabezado)
 
             tabla = pdf.crear_tabla(TABLA_DEFICIENCIA_TEMA)
             tabla = self.procesar_tabla_fortaleza_deficiencia(tabla, debilidades, is_fortaleza = False)
-            pdf.agregar_tabla(tabla, titulo='Resumen debilidades primera fase')
+            pdf.agregar_tabla(tabla, titulo='Resumen debilidades ' + encabezado)
 
             # Paso 3: Desplegar la info de reporte 2
             fortaleza_debilidad_2 = self.calcular_lista_fortaleza_debilidad(query['reporte_examenes_prueba'].filas.values())
@@ -450,11 +454,11 @@ class ReportPopulator(threading.Thread):
             pdf.agregar_tabla(tabla, titulo='Resumen debilidades exámenes diagnóstico')
 
             # Paso 4: Calcular tablas de resumen respectivas
-            tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_RONDA)
+            tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA)
             tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['comparativo_exp_ronda'].filasResultado, calcular_fortaleza = True)
             pdf.agregar_tabla(tabla, titulo='Resumen (fortalezas)')
 
-            tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_RONDA)
+            tabla = pdf.crear_tabla(TABLA_RESUMEN_COMPARACION_ADMISION_PRUEBA)
             tabla = self.procesar_tabla_comparacion_ronda_1_2(tabla, query['comparativo_exp_ronda'].filasResultado, calcular_fortaleza = False)
             pdf.agregar_tabla(tabla, titulo='Resumen (debilidades)')
 
